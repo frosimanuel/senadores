@@ -85,6 +85,11 @@
     border: 1px solid var(--tinta); border-radius: 3px; padding: 10px 12px;
   }
   .prov-pick { max-width: 100%; }
+  .mis-senadores { margin: 24px auto 0; max-width: 460px; background: #fff; border: 1px solid var(--borde); border-radius: 6px; padding: 20px 18px; }
+  .mis-senadores .caras { display: flex; gap: 18px; justify-content: center; }
+  .mis-senadores .cara { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: inherit; }
+  .mis-senadores .cara-nom { font-size: 12.5px; font-weight: 600; }
+  .mis-senadores .mis-txt { font-size: 14px; color: var(--tinta-70); margin: 12px 0 14px; text-wrap: balance; }
   .prov-pick select { min-width: 240px; max-width: calc(100vw - 40px); border-width: 2px; }
 
   /* Números RNTR */
@@ -443,11 +448,33 @@ function vistaHome() {
   hero.append(el('p', { class: 'baja', text: 'La Ley de Tierras se redefine en el Congreso. Conocé a tus senadores, mirá la postura de su bloque y escribiles hoy.' }));
   const pick = el('div', { class: 'prov-pick' });
   pick.append(el('label', { for: 'prov-hero', text: '¿De qué provincia sos?' }));
-  const sel = el('select', { id: 'prov-hero', onchange: e => { filtro.prov = e.target.value; provSet(e.target.value); render(); document.getElementById('listado').scrollIntoView(); } });
+  const sel = el('select', { id: 'prov-hero', onchange: e => { filtro.prov = e.target.value; provSet(e.target.value); render(); } });
   sel.append(el('option', { value: '', text: 'Elegí tu provincia' }));
   PROVINCIAS.forEach(p => sel.append(el('option', { value: p, text: p, ...(filtro.prov === p ? { selected: '' } : {}) })));
   pick.append(sel);
   hero.append(pick);
+
+  if (filtro.prov) {
+    const mios = SEN.filter(s => s.provincia === filtro.prov);
+    const panel = el('div', { class: 'mis-senadores' });
+    const caras = el('div', { class: 'caras' });
+    mios.forEach(s => {
+      const cara = el('a', { class: 'cara', href: '#/senador/' + s.slug, title: `${s.apellido}, ${s.nombre}` });
+      cara.append(medallon(s, true));
+      cara.append(el('span', { class: 'cara-nom', text: s.apellido }));
+      caras.append(cara);
+    });
+    panel.append(caras);
+    panel.append(el('p', { class: 'mis-txt', text: `Estas ${mios.length === 1 ? 'es la persona que representa' : 'son las ' + mios.length + ' personas que representan'} a ${filtro.prov} en esa votación.` }));
+    panel.append(btnGmail({
+      href: mailHrefGrupo(mios),
+      fallback: mailFallbackGrupo(mios),
+      onclick: () => { mios.forEach(s => marcarEnviado(s.slug, true)); },
+    }, `Mandales un mail a ${mios.length === 1 ? 'tu senador' : `los ${mios.length}`} ahora`));
+    panel.append(el('p', { style: 'margin-top:10px;font-size:14px' },
+      el('a', { href: '#listado', text: 'Ver sus perfiles y posturas ↓', onclick: ev => { ev.preventDefault(); document.getElementById('listado').scrollIntoView({ behavior: 'smooth' }); } })));
+    hero.append(panel);
+  }
   const TXT_SHARE_HOME = 'La Ley de Tierras no se votó el 16/7 por falta de votos: vuelve al Senado el 6 de agosto. Encontrá a tus senadores y escribiles — el mail sale pre-armado, tardás un minuto:';
   const btnShareHero = navigator.share
     ? el('button', { class: 'btn', text: 'Compartir el sitio', onclick: () => navigator.share({ text: TXT_SHARE_HOME, url: location.href }).catch(() => {}) })
@@ -619,7 +646,13 @@ function vistaPerfil(slug) {
   const comp = el('div', { class: 'panel', style: 'margin-top:16px' });
   comp.append(el('h3', { text: 'Hacé circular este perfil' }));
   comp.append(el('p', { style: 'font-size:14px', text: 'Cada persona de ' + s.provincia + ' que le escribe suma. Compartí el perfil con gente de la provincia.' }));
-  comp.append(shareRow(`${s.apellido} representa a ${s.provincia} en el Senado. La Ley de Tierras vuelve al recinto el 6 de agosto — mirá su postura y escribile (el mail sale pre-armado, tardás un minuto):`, urlPerfil(s)));
+  const filaShare = shareRow(`${s.apellido} representa a ${s.provincia} en el Senado. La Ley de Tierras vuelve al recinto el 6 de agosto — mirá su postura y escribile (el mail sale pre-armado, tardás un minuto):`, urlPerfil(s));
+  filaShare.prepend(btnStory({
+    titulo: `${s.apellido} decide sobre la Ley de Tierras por ${s.provincia}.`,
+    cta: 'Escribile: el mail sale pre-armado, tardás un minuto.',
+    fotos: ['fotos/' + s.slug + '.jpg'],
+  }));
+  comp.append(filaShare);
   w.append(comp);
   sec.append(w);
   app.append(sec, seccionQueSeVota());
@@ -782,8 +815,16 @@ function vistaCampania() {
     if (hechos) {
       const multi = el('div', { class: 'panel', style: 'margin-top:18px' });
       multi.append(el('h3', { text: 'Ya enviaste — ahora multiplicá' }));
-      multi.append(el('p', { style: 'font-size:14px', text: 'Un mail es una voz; una cadena de WhatsApp son cientos. Pasá el sitio a tres personas de tu provincia.' }));
-      multi.append(shareRow('Le acabo de escribir a mis senadores por la Ley de Tierras — vuelve al Senado el 6 de agosto y se define con pocos votos. Hacelo vos también, el mail sale pre-armado y tardás un minuto:'));
+      multi.append(el('p', { style: 'font-size:14px', text: 'Un mail es una voz; una story o una cadena de WhatsApp son cientos. Contá que lo hiciste.' }));
+      const provStory = (g.id === 'prov' && campania.prov) ? campania.prov : (filtro.prov || '');
+      const fotosStory = (provStory ? SEN.filter(s => s.provincia === provStory) : lista.filter(s => enviados[s.slug])).slice(0, 3).map(s => 'fotos/' + s.slug + '.jpg');
+      const fila = shareRow('Le acabo de escribir a mis senadores por la Ley de Tierras — vuelve al Senado el 6 de agosto y se define con pocos votos. Hacelo vos también, el mail sale pre-armado y tardás un minuto:');
+      fila.prepend(btnStory({
+        titulo: provStory ? `Ya le escribí a mis senadores de ${provStory}.` : 'Ya le escribí a mis senadores.',
+        cta: 'Escribiles vos también: el mail sale pre-armado, tardás un minuto.',
+        fotos: fotosStory,
+      }));
+      multi.append(fila);
       w.append(multi);
     }
   }
@@ -858,6 +899,129 @@ function urlPerfil(s) {
   return enProd ? 'https://0xdwb.is-a.dev/senadores/s/' + s.slug + '.html' : location.href;
 }
 
+/* ---------- generador de stories (1080×1920, todo client-side) ---------- */
+function storyWrap(ctx, texto, cx, y, maxW, lineH) {
+  const palabras = texto.split(' ');
+  let linea = '';
+  for (const p of palabras) {
+    const prueba = linea ? linea + ' ' + p : p;
+    if (ctx.measureText(prueba).width > maxW && linea) {
+      ctx.fillText(linea, cx, y); y += lineH; linea = p;
+    } else linea = prueba;
+  }
+  if (linea) { ctx.fillText(linea, cx, y); y += lineH; }
+  return y;
+}
+
+function storyFoto(src) {
+  return new Promise(res => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => res(null);
+    setTimeout(() => res(null), 2500);
+    i.src = src;
+  });
+}
+
+function storySol(x, cx, cy, rIn, rOut) {
+  x.strokeStyle = '#C99C33'; x.lineWidth = 3; x.lineCap = 'round';
+  x.beginPath(); x.arc(cx, cy, rIn, 0, Math.PI * 2); x.stroke();
+  x.beginPath(); x.arc(cx, cy, rIn * 0.55, 0, Math.PI * 2); x.stroke();
+  for (let i = 0; i < 32; i++) {
+    const a = (i / 32) * Math.PI * 2;
+    const rO = i % 2 === 0 ? rOut : rOut * 0.72;
+    x.beginPath();
+    x.moveTo(cx + Math.cos(a) * (rIn + 8), cy + Math.sin(a) * (rIn + 8));
+    x.lineTo(cx + Math.cos(a) * rO, cy + Math.sin(a) * rO);
+    x.stroke();
+  }
+}
+
+const F_SERIF = 'Didot, "Bodoni 72", "Playfair Display", Georgia, serif';
+const F_SANS = '-apple-system, Helvetica, Arial, sans-serif';
+
+async function generarStory(opts) {
+  const W = 1080, H = 1920;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#14212E'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#74ACDF'; x.fillRect(0, 0, W, 14);
+  storySol(x, W / 2, 330, 88, 240);
+
+  x.textAlign = 'center';
+  x.fillStyle = '#C99C33';
+  x.font = `600 34px ${F_SANS}`;
+  x.fillText('E L   S E N A D O   Y   L A   T I E R R A', W / 2, 660);
+
+  x.fillStyle = '#FAFBFC';
+  x.font = `500 92px ${F_SERIF}`;
+  let y = storyWrap(x, opts.titulo, W / 2, 780, 900, 106);
+
+  // Fotos circulares (si cargan; en el Artifact la CSP las bloquea y se omiten)
+  const fotos = (await Promise.all((opts.fotos || []).slice(0, 3).map(storyFoto))).filter(Boolean);
+  if (fotos.length) {
+    const r = 105, gap = 60;
+    const total = fotos.length * r * 2 + (fotos.length - 1) * gap;
+    let fx = (W - total) / 2 + r;
+    const fy = y + 130;
+    for (const f of fotos) {
+      x.save();
+      x.beginPath(); x.arc(fx, fy, r, 0, Math.PI * 2); x.clip();
+      x.drawImage(f, fx - r, fy - r, r * 2, r * 2);
+      x.restore();
+      x.strokeStyle = '#74ACDF'; x.lineWidth = 7;
+      x.beginPath(); x.arc(fx, fy, r, 0, Math.PI * 2); x.stroke();
+      fx += r * 2 + gap;
+    }
+    y = fy + r + 90;
+  } else {
+    y += 70;
+  }
+
+  x.fillStyle = '#C99C33'; x.fillRect(W / 2 - 70, y, 140, 6);
+  y += 90;
+
+  x.fillStyle = '#DEBA69';
+  x.font = `600 52px ${F_SANS}`;
+  const cd = textoCountdown();
+  y = storyWrap(x, 'Vuelve al Senado el 6 de agosto' + (cd ? ` — ${cd.toLowerCase()}.` : '.'), W / 2, y, 880, 66);
+  y += 40;
+
+  x.fillStyle = '#D6E2EC';
+  x.font = `400 44px ${F_SANS}`;
+  y = storyWrap(x, opts.cta, W / 2, y, 860, 60);
+
+  x.fillStyle = '#74ACDF';
+  x.font = `600 46px ${F_SANS}`;
+  x.fillText('0xdwb.is-a.dev/senadores', W / 2, 1800);
+
+  return new Promise(res => c.toBlob(res, 'image/png'));
+}
+
+function btnStory(opts) {
+  return el('button', { class: 'btn', text: 'Historia para Instagram', onclick: async ev => {
+    const boton = ev.target;
+    boton.textContent = 'Armando…';
+    try {
+      const blob = await generarStory(opts);
+      const file = new File([blob], 'senado-y-la-tierra.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] }).catch(() => {});
+        boton.textContent = 'Historia para Instagram';
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'senado-y-la-tierra.png';
+        a.click();
+        boton.textContent = 'Descargada ✓ — subila a tu story';
+        setTimeout(() => { boton.textContent = 'Historia para Instagram'; }, 4000);
+      }
+    } catch {
+      boton.textContent = 'Historia para Instagram';
+    }
+  } });
+}
+
 function footer() {
   const f = el('footer');
   const w = el('div', { class: 'wrap' });
@@ -869,7 +1033,13 @@ function footer() {
   d2.append(el('p', { text: 'Proyecto ciudadano independiente, sin afiliación partidaria. Si encontrás un error en los datos, escribinos y lo corregimos con la fuente a la vista.' }));
   const d0 = el('div');
   d0.append(el('h4', { text: 'Hacé circular el sitio' }));
-  d0.append(shareRow('La Ley de Tierras no se votó el 16/7 por falta de votos: vuelve al Senado el 6 de agosto. Encontrá a tus senadores y escribiles — el mail sale pre-armado, tardás un minuto:'));
+  const filaFoot = shareRow('La Ley de Tierras no se votó el 16/7 por falta de votos: vuelve al Senado el 6 de agosto. Encontrá a tus senadores y escribiles — el mail sale pre-armado, tardás un minuto:');
+  filaFoot.append(btnStory({
+    titulo: '72 personas deciden quién puede comprar la Argentina.',
+    cta: 'Encontrá a tus senadores y escribiles: el mail sale pre-armado.',
+    fotos: [],
+  }));
+  d0.append(filaFoot);
   d0.append(el('p', { style: 'margin-top:12px' },
     el('a', { href: '#/campania', text: 'O escribiles a varios de una vez →' })));
   w.append(d0, d1, d2);
