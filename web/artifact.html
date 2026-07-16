@@ -166,6 +166,11 @@
   .camp-prog .barra { height: 8px; background: var(--borde); border-radius: 4px; overflow: hidden; }
   .camp-prog .barra > div { height: 100%; background: var(--dorado); border-radius: 4px; transition: width .2s; }
   @media (prefers-reduced-motion: reduce) { .camp-prog .barra > div { transition: none; } }
+  .btn-gmail { display: inline-flex; align-items: center; gap: 8px; }
+  .btn-gmail .ic { display: inline-flex; background: #fff; border-radius: 3px; padding: 3px 4px; }
+  .camp-tools { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: -8px 0 16px; }
+  .camp-orden { font-size: 14px; color: var(--tinta-70); display: inline-flex; gap: 8px; align-items: center; }
+  .camp-orden select { padding: 7px 10px; font-size: 14px; }
   .camp-row {
     display: flex; gap: 12px; align-items: center; padding: 10px 12px; margin-bottom: 8px;
     background: #fff; border: 1px solid var(--borde); border-radius: 4px;
@@ -239,6 +244,16 @@ function mailBody(s) {
   const saludo = s.genero === 'F' ? 'Estimada Senadora' : 'Estimado Senador';
   return `${saludo} ${s.apellido}:\n\nMe llamo [TU NOMBRE], soy ciudadano/a de [TU CIUDAD, PROVINCIA]. Le escribo por el proyecto de Inviolabilidad de la Propiedad Privada y su capítulo sobre la Ley de Tierras Rurales 26.737.\n\nEl promedio nacional de extranjerización (5%) esconde el dato relevante: según el Registro Nacional de Tierras Rurales, 36 departamentos ya superan el 15% y 4 superan el 50%. El tope departamental que se elimina era el único freno donde la compra extranjera se concentra: cordillera, lagos, nacientes de agua y frontera. Me preocupa además el silencio administrativo de 180 días en zonas de frontera.\n\nLe pido que considere estos datos al definir su posición sobre ese capítulo.\n\nGracias por su tiempo.\n\n[TU NOMBRE]\n[TU CIUDAD, PROVINCIA]`;
 }
+/* Logo de Gmail inline (estático — nunca lleva datos) sobre chip blanco */
+const GMAIL_SVG = '<svg width="15" height="12" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path fill="#4285f4" d="M1.636 18h3.819V9.273L0 5.182v11.182C0 17.269.732 18 1.636 18z"/><path fill="#34a853" d="M18.545 18h3.819c.904 0 1.636-.731 1.636-1.636V5.182l-5.455 4.091z"/><path fill="#fbbc04" d="M18.545 3v6.273L24 5.182V3.818c0-2.023-2.309-3.177-3.927-1.964z"/><path fill="#ea4335" d="M5.455 9.273V3l6.545 4.91L18.545 3v6.273L12 14.182z"/><path fill="#c5221f" d="M0 3.818v1.364l5.455 4.091V3L3.927 1.854C2.309.64 0 1.795 0 3.818z"/></svg>';
+function btnGmail(attrs, texto) {
+  const a = el('a', Object.assign({ class: 'btn primario btn-gmail', target: '_blank', rel: 'noopener' }, attrs));
+  const ic = el('span', { class: 'ic', 'aria-hidden': 'true' });
+  ic.innerHTML = GMAIL_SVG;
+  a.append(ic, el('span', { text: texto }));
+  return a;
+}
+
 function gmailUrl(s) {
   return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(s.email)
     + '&su=' + encodeURIComponent('Pedido de un ciudadano sobre el capítulo de tierras')
@@ -295,7 +310,7 @@ function vistaHome() {
   pick.append(sel);
   hero.append(pick);
   hero.append(el('p', { style: 'margin-top:18px' },
-    el('a', { class: 'btn primario', href: '#/campania', text: '✉ Escribiles a varios senadores de una vez' })));
+    el('a', { class: 'btn primario', href: '#/campania', text: 'Escribiles a varios senadores de una vez' })));
   app.append(hero, el('hr', { class: 'guarda' }));
 
   const nums = el('section', { class: 'numeros', 'aria-label': 'Datos del Registro Nacional de Tierras Rurales' });
@@ -440,7 +455,7 @@ function vistaPerfil(slug) {
     setTimeout(() => { ev.target.textContent = 'Copiar'; }, 2000);
   } }));
   der.append(filaMail);
-  der.append(el('a', { class: 'btn primario', href: gmailUrl(s), target: '_blank', rel: 'noopener', text: '✉ Abrir mail redactado en Gmail' }));
+  der.append(btnGmail({ href: gmailUrl(s) }, 'Abrir mail redactado en Gmail'));
   if (s.tel) der.append(el('p', { class: 'tel-nota', text: 'Teléfono: conmutador del Senado, interno ' + s.tel + '.' }));
   const redes = el('div', { class: 'redes' });
   if (s.tw) redes.append(el('a', { href: s.tw, target: '_blank', rel: 'noopener', text: 'X / Twitter' }));
@@ -463,7 +478,8 @@ function vistaPerfil(slug) {
 }
 
 /* ---------- modo campaña: escribirle a varios, con progreso ---------- */
-let campania = { grupo: 'juego', prov: '' };
+let campania = { grupo: 'juego', prov: '', orden: 'apellido' };
+const RANGO_POSTURA = { impulsa: 0, dictamen: 1, juego: 2, rechaza: 3 };
 
 function enviadosGet() {
   try { return JSON.parse(localStorage.getItem('campania-enviados') || '{}'); }
@@ -533,11 +549,28 @@ function vistaCampania() {
     barra.append(el('div', { style: `width:${lista.length ? (hechos / lista.length) * 100 : 0}%` }));
     prog.append(barra);
     w.append(prog);
+
+    const tools = el('div', { class: 'camp-tools' });
+    const ordenar = el('label', { class: 'camp-orden' }, 'Ordenar por ');
+    const selOrden = el('select', { 'aria-label': 'Ordenar la lista', onchange: e => { campania.orden = e.target.value; render(); } });
+    [['apellido', 'apellido'], ['postura', 'postura del bloque']].forEach(([v, t]) =>
+      selOrden.append(el('option', { value: v, text: t, ...(campania.orden === v ? { selected: '' } : {}) })));
+    ordenar.append(selOrden);
+    tools.append(ordenar);
+    if (hechos) {
+      tools.append(el('button', { class: 'btn', text: 'Limpiar enviados', onclick: () => {
+        lista.forEach(s => marcarEnviado(s.slug, false)); render();
+      } }));
+    }
+    w.append(tools);
   }
 
   lista
     .slice()
-    .sort((a, b) => Number(Boolean(enviados[a.slug])) - Number(Boolean(enviados[b.slug])) || a.apellido.localeCompare(b.apellido, 'es'))
+    .sort((a, b) =>
+      Number(Boolean(enviados[a.slug])) - Number(Boolean(enviados[b.slug]))
+      || (campania.orden === 'postura' ? RANGO_POSTURA[a.postura] - RANGO_POSTURA[b.postura] : 0)
+      || a.apellido.localeCompare(b.apellido, 'es'))
     .forEach(s => {
       const hecho = Boolean(enviados[s.slug]);
       const row = el('div', { class: 'camp-row' + (hecho ? ' enviado' : ''), style: stanceVars(s) });
@@ -548,11 +581,10 @@ function vistaCampania() {
       quien.lastChild.append(el('span', { class: 'chip', text: ST[s.postura].corto }));
       row.append(quien);
       const acc = el('div', { class: 'acciones' });
-      acc.append(el('a', {
-        class: 'btn primario', href: gmailUrl(s), target: '_blank', rel: 'noopener',
-        text: hecho ? '✉ Reabrir Gmail' : '✉ Abrir Gmail',
+      acc.append(btnGmail({
+        href: gmailUrl(s),
         onclick: () => { marcarEnviado(s.slug, true); setTimeout(render, 150); },
-      }));
+      }, hecho ? 'Reabrir Gmail' : 'Abrir Gmail'));
       acc.append(el('button', {
         class: 'camp-check', 'aria-pressed': String(hecho),
         text: hecho ? '✓ Enviado' : 'Marcar enviado',
@@ -564,11 +596,6 @@ function vistaCampania() {
 
   if (lista.length) {
     w.append(el('p', { class: 'tel-nota', style: 'margin-top:14px', text: 'Cada mail se abre como borrador en Gmail: completá tu nombre y ciudad antes de enviar. Mandalos de a uno y con calma — Gmail puede frenar ráfagas muy rápidas.' }));
-    if (hechos) {
-      w.append(el('button', { class: 'btn', style: 'margin-top:10px', text: 'Reiniciar progreso del grupo', onclick: () => {
-        lista.forEach(s => marcarEnviado(s.slug, false)); render();
-      } }));
-    }
   }
 
   sec.append(w);
