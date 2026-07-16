@@ -188,6 +188,9 @@
   @media (prefers-reduced-motion: reduce) { .camp-prog .barra > div { transition: none; } }
   .btn-gmail { display: inline-flex; align-items: center; gap: 8px; }
   .btn-gmail .ic { display: inline-flex; background: #fff; border-radius: 3px; padding: 3px 4px; }
+  .camp-rapido { background: var(--celeste-suave); border: 1px solid var(--celeste); border-radius: 4px; padding: 14px 16px; margin: 12px 0 18px; }
+  .camp-rapido .t { font-weight: 600; font-size: 15px; }
+  .camp-rapido .d { font-size: 13.5px; color: var(--tinta-70); margin-top: 3px; max-width: 62ch; }
   .camp-tools { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: -8px 0 16px; }
   .camp-orden { font-size: 14px; color: var(--tinta-70); display: inline-flex; gap: 8px; align-items: center; }
   .camp-orden select { padding: 7px 10px; font-size: 14px; }
@@ -278,6 +281,16 @@ function gmailUrl(s) {
   return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(s.email)
     + '&su=' + encodeURIComponent('Pedido de un ciudadano sobre el capítulo de tierras')
     + '&body=' + encodeURIComponent(mailBody(s));
+}
+
+function mailBodyGrupo() {
+  return `Estimados senadores y senadoras:\n\nMe llamo [TU NOMBRE], soy ciudadano/a de [TU CIUDAD, PROVINCIA]. Les escribo por el proyecto de Inviolabilidad de la Propiedad Privada y su capítulo sobre la Ley de Tierras Rurales 26.737.\n\nEl promedio nacional de extranjerización (5%) esconde el dato relevante: según el Registro Nacional de Tierras Rurales, 36 departamentos ya superan el 15% y 4 superan el 50%. El tope departamental que se elimina era el único freno donde la compra extranjera se concentra: cordillera, lagos, nacientes de agua y frontera. Me preocupa además el silencio administrativo de 180 días en zonas de frontera.\n\nLes pido que consideren estos datos al definir su posición sobre ese capítulo.\n\nGracias por su tiempo.\n\n[TU NOMBRE]\n[TU CIUDAD, PROVINCIA]`;
+}
+function gmailUrlGrupo(lista) {
+  return 'https://mail.google.com/mail/?view=cm&fs=1'
+    + '&bcc=' + encodeURIComponent(lista.map(s => s.email).join(','))
+    + '&su=' + encodeURIComponent('Pedido de un ciudadano sobre el capítulo de tierras')
+    + '&body=' + encodeURIComponent(mailBodyGrupo());
 }
 
 /* ---------- banner ---------- */
@@ -558,6 +571,25 @@ function vistaCampania() {
     lista = SEN.filter(g.filtra);
   }
   w.append(el('p', { class: 'nota', style: 'color:var(--tinta-70);font-size:14px;margin-top:6px', text: g.nota }));
+
+  if (lista.length) {
+    const rapido = el('div', { class: 'camp-rapido' });
+    rapido.append(el('p', { class: 't', text: '¿Un solo click? Mandá un único mail a todo el grupo' }));
+    rapido.append(el('p', { class: 'd', text: `Se abre UN Gmail tuyo con los ${lista.length} en copia oculta. Menos personal que escribirles de a uno — pero un mail enviado vale más que una lista entera que quedó en borrador.` }));
+    const fila = el('div', { class: 'redes', style: 'margin-top:10px' });
+    fila.append(btnGmail({
+      href: gmailUrlGrupo(lista),
+      onclick: () => { lista.forEach(s => marcarEnviado(s.slug, true)); setTimeout(render, 150); },
+    }, `Un mail a los ${lista.length}`));
+    fila.append(el('button', { class: 'btn', text: `Copiar los ${lista.length} mails`, onclick: async ev => {
+      const mails = lista.map(s => s.email).join(', ');
+      try { await navigator.clipboard.writeText(mails); ev.target.textContent = 'Copiados ✓'; }
+      catch { window.prompt('Copiá los mails:', mails); }
+      setTimeout(() => { ev.target.textContent = `Copiar los ${lista.length} mails`; }, 2000);
+    } }));
+    rapido.append(fila);
+    w.append(rapido);
+  }
 
   const enviados = enviadosGet();
   const hechos = lista.filter(s => enviados[s.slug]).length;
