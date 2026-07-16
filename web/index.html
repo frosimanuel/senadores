@@ -54,6 +54,9 @@
   .guarda { border: none; border-top: 1px solid var(--celeste); position: relative; margin: 0; }
   .guarda::after { content: ""; display: block; border-top: 1px solid var(--celeste); margin-top: 3px; }
 
+  .aviso-webview { background: var(--tinta); color: #D6E2EC; font-size: 13px; padding: 9px 20px; line-height: 1.45; }
+  .aviso-webview strong { color: #fff; }
+
   /* Banner de estado de votación */
   #banner { padding: 12px 0; font-size: 14.5px; border-bottom: 1px solid var(--borde); }
   #banner .wrap { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
@@ -237,6 +240,13 @@ const ST = {
   rechaza:  { ic: '"▼"', color: 'var(--st-rechaza)',  corto: 'Rechaza' },
 };
 const PROVINCIAS = [...new Set(SEN.map(s => s.provincia))].sort((a, b) => a.localeCompare(b, 'es'));
+
+/* Entorno: dentro del visor embebido de Instagram/Facebook/etc, Google bloquea
+   el login de Gmail web. En móvil usamos mailto: (lo maneja el sistema y abre
+   la app de mail ya logueada); en desktop, Gmail web. */
+const UA_NAV = navigator.userAgent || '';
+const EN_WEBVIEW = /Instagram|FBAN|FBAV|FB_IAB|Line\/|TikTok|BytedanceWebview|Twitter/i.test(UA_NAV);
+const ES_MOVIL = /Android|iPhone|iPad|iPod/i.test(UA_NAV) || EN_WEBVIEW;
 const app = document.getElementById('app');
 let filtro = { prov: '', postura: '', q: '' };
 
@@ -277,11 +287,23 @@ function btnGmail(attrs, texto) {
   return a;
 }
 
+const ASUNTO = 'Pedido de un ciudadano sobre el capítulo de tierras';
 function gmailUrl(s) {
   return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(s.email)
-    + '&su=' + encodeURIComponent('Pedido de un ciudadano sobre el capítulo de tierras')
+    + '&su=' + encodeURIComponent(ASUNTO)
     + '&body=' + encodeURIComponent(mailBody(s));
 }
+function mailtoUrl(s) {
+  return 'mailto:' + s.email + '?subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBody(s));
+}
+/* En móvil el mail sale por la app nativa (funciona incluso dentro del visor
+   de Instagram); en desktop, por Gmail web. */
+function mailHref(s) { return ES_MOVIL ? mailtoUrl(s) : gmailUrl(s); }
+function mailHrefGrupo(lista) {
+  if (ES_MOVIL) return 'mailto:?bcc=' + lista.map(s => s.email).join(',') + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBodyGrupo());
+  return gmailUrlGrupo(lista);
+}
+const TXT_MAIL = ES_MOVIL ? 'Abrir mail redactado' : 'Abrir mail redactado en Gmail';
 
 function mailBodyGrupo() {
   return `Estimados senadores y senadoras:\n\nMe llamo [TU NOMBRE], soy ciudadano/a de [TU CIUDAD, PROVINCIA]. Les escribo por el proyecto de Inviolabilidad de la Propiedad Privada y su capítulo sobre la Ley de Tierras Rurales 26.737.\n\nEl promedio nacional de extranjerización (5%) esconde el dato relevante: según el Registro Nacional de Tierras Rurales, 36 departamentos ya superan el 15% y 4 superan el 50%. El tope departamental que se elimina era el único freno donde la compra extranjera se concentra: cordillera, lagos, nacientes de agua y frontera. Me preocupa además el silencio administrativo de 180 días en zonas de frontera.\n\nLes pido que consideren estos datos al definir su posición sobre ese capítulo.\n\nGracias por su tiempo.\n\n[TU NOMBRE]\n[TU CIUDAD, PROVINCIA]`;
@@ -294,6 +316,14 @@ function gmailUrlGrupo(lista) {
 }
 
 /* ---------- banner ---------- */
+(function avisoWebview() {
+  if (!EN_WEBVIEW) return;
+  const a = el('div', { class: 'aviso-webview', role: 'note' });
+  a.append(el('strong', { text: 'Estás en el navegador de la app. ' }));
+  a.append('Los botones de mail funcionan igual (abren tu app de correo). Para la experiencia completa, tocá ⋯ arriba a la derecha y elegí "Abrir en el navegador externo".');
+  document.body.insertBefore(a, document.getElementById('banner'));
+})();
+
 (function banner() {
   const b = document.getElementById('banner');
   b.classList.add(ESTADO.estado);
@@ -488,7 +518,7 @@ function vistaPerfil(slug) {
     setTimeout(() => { ev.target.textContent = 'Copiar'; }, 2000);
   } }));
   der.append(filaMail);
-  der.append(btnGmail({ href: gmailUrl(s) }, 'Abrir mail redactado en Gmail'));
+  der.append(btnGmail({ href: mailHref(s) }, TXT_MAIL));
   if (s.tel) der.append(el('p', { class: 'tel-nota', text: 'Teléfono: conmutador del Senado, interno ' + s.tel + '.' }));
   const redes = el('div', { class: 'redes' });
   if (s.tw) redes.append(el('a', { href: s.tw, target: '_blank', rel: 'noopener', text: 'X / Twitter' }));
@@ -578,7 +608,7 @@ function vistaCampania() {
     rapido.append(el('p', { class: 'd', text: `Se abre UN Gmail tuyo con los ${lista.length} en copia oculta. Menos personal que escribirles de a uno — pero un mail enviado vale más que una lista entera que quedó en borrador.` }));
     const fila = el('div', { class: 'redes', style: 'margin-top:10px' });
     fila.append(btnGmail({
-      href: gmailUrlGrupo(lista),
+      href: mailHrefGrupo(lista),
       onclick: () => { lista.forEach(s => marcarEnviado(s.slug, true)); setTimeout(render, 150); },
     }, `Un mail a los ${lista.length}`));
     fila.append(el('button', { class: 'btn', text: `Copiar los ${lista.length} mails`, onclick: async ev => {
@@ -634,9 +664,9 @@ function vistaCampania() {
       row.append(quien);
       const acc = el('div', { class: 'acciones' });
       acc.append(btnGmail({
-        href: gmailUrl(s),
+        href: mailHref(s),
         onclick: () => { marcarEnviado(s.slug, true); setTimeout(render, 150); },
-      }, hecho ? 'Reabrir Gmail' : 'Abrir Gmail'));
+      }, (hecho ? 'Reabrir' : 'Abrir') + (ES_MOVIL ? ' mail' : ' Gmail')));
       acc.append(el('button', {
         class: 'camp-check', 'aria-pressed': String(hecho),
         text: hecho ? '✓ Enviado' : 'Marcar enviado',
