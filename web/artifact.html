@@ -451,6 +451,13 @@ function vistaHome() {
       fallback: mailFallbackGrupo(mios),
       onclick: () => { mios.forEach(s => marcarEnviado(s.slug, true)); },
     }, `Mandales un mail a ${mios.length === 1 ? 'tu senador' : `los ${mios.length}`} ahora`));
+    const juego = SEN.filter(s => s.postura === 'juego');
+    panel.append(el('div', { style: 'margin-top:10px' }, btnGmail({
+      class: 'btn btn-gmail',
+      href: mailHrefGrupo(juego),
+      fallback: mailFallbackGrupo(juego),
+      onclick: () => { juego.forEach(s => marcarEnviado(s.slug, true)); },
+    }, `Y otro a los ${juego.length} indecisos que definen la votación`)));
     panel.append(el('p', { style: 'margin-top:10px;font-size:14px' },
       el('a', { href: '#listado', text: 'Ver sus perfiles y posturas ↓', onclick: ev => { ev.preventDefault(); document.getElementById('listado').scrollIntoView({ behavior: 'smooth' }); } })));
     hero.append(panel);
@@ -985,16 +992,20 @@ function btnStory(opts) {
     try {
       const blob = await generarStory(opts);
       const file = new File([blob], 'senado-y-la-tierra.png', { type: 'image/png' });
+      // El link no puede ir clickeable dentro de la imagen: lo copiamos para
+      // que pegarlo en el sticker de enlace de Instagram sea un toque.
+      try { await navigator.clipboard.writeText('https://0xdwb.is-a.dev/senadores/'); } catch {}
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file] }).catch(() => {});
-        boton.textContent = 'Historia para Instagram';
+        boton.textContent = 'Link copiado ✓ — pegalo en el sticker de enlace';
+        setTimeout(() => { boton.textContent = 'Historia para Instagram'; }, 5000);
       } else {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'senado-y-la-tierra.png';
         a.click();
-        boton.textContent = 'Descargada ✓ — subila a tu story';
-        setTimeout(() => { boton.textContent = 'Historia para Instagram'; }, 4000);
+        boton.textContent = 'Descargada ✓ y link copiado — subila con el sticker de enlace';
+        setTimeout(() => { boton.textContent = 'Historia para Instagram'; }, 5000);
       }
     } catch {
       boton.textContent = 'Historia para Instagram';
