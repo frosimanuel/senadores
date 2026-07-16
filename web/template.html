@@ -179,6 +179,10 @@
   @media (prefers-reduced-motion: reduce) { .camp-prog .barra > div { transition: none; } }
   .btn-gmail { display: inline-flex; align-items: center; gap: 8px; }
   .btn-gmail .ic { display: inline-flex; background: #fff; border-radius: 3px; padding: 3px 4px; }
+  .kit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 14px; }
+  .kit-card img { width: 100%; border: 1px solid var(--borde); border-radius: 4px; display: block; }
+  .kit-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .kit-acciones .btn { font-size: 13px; padding: 7px 10px; }
   .camp-datos { margin: 14px 0 4px; }
   .camp-datos .t { font-size: 13.5px; color: var(--tinta-70); margin-bottom: 8px; }
   .camp-datos .fila-datos { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -458,8 +462,9 @@ function vistaHome() {
       fallback: mailFallbackGrupo(juego),
       onclick: () => { juego.forEach(s => marcarEnviado(s.slug, true)); },
     }, `Y otro a los ${juego.length} indecisos que definen la votación`)));
-    panel.append(el('p', { style: 'margin-top:10px;font-size:14px' },
-      el('a', { href: '#listado', text: 'Ver sus perfiles y posturas ↓', onclick: ev => { ev.preventDefault(); document.getElementById('listado').scrollIntoView({ behavior: 'smooth' }); } })));
+    panel.append(el('p', { style: 'margin-top:10px;font-size:14px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap' },
+      el('a', { href: '#listado', text: 'Ver sus perfiles y posturas ↓', onclick: ev => { ev.preventDefault(); document.getElementById('listado').scrollIntoView({ behavior: 'smooth' }); } }),
+      el('a', { href: '#/difusion', text: 'Kit de difusión →' })));
     hero.append(panel);
   }
   const TXT_SHARE_HOME = 'La Ley de Tierras no se votó el 16/7 por falta de votos: vuelve al Senado el 6 de agosto. Encontrá a tus senadores y escribiles — el mail sale pre-armado, tardás un minuto:';
@@ -614,6 +619,11 @@ function vistaPerfil(slug) {
   } }));
   der.append(filaMail);
   der.append(btnGmail({ href: mailHref(s), fallback: mailFallback(s) }, TXT_MAIL));
+  const urlTweet = tweetAlSenador(s);
+  if (urlTweet) {
+    der.append(el('p', { style: 'margin-top:8px' },
+      el('a', { class: 'btn', href: urlTweet, target: '_blank', rel: 'noopener', text: 'Preguntale su voto en X' })));
+  }
   if (ES_MOVIL) {
     der.append(el('p', { class: 'tel-nota', style: 'margin-top:6px' },
       el('a', { href: mailtoUrl(s), text: '¿Usás otra app de correo? Abrí el borrador acá.' })));
@@ -822,6 +832,58 @@ function vistaCampania() {
   window.scrollTo(0, 0);
 }
 
+/* ---------- kit de difusión ---------- */
+const TXT_WHATSAPP_KIT = 'La Ley de Tierras no se votó el 16/7 por falta de votos: vuelve al Senado el 6 de agosto. Elimina los topes a la compra de tierra por extranjeros (36 departamentos ya superan el 15% según el RNTR). Acá encontrás a tus senadores y les escribís en un minuto, el mail sale pre-armado: https://0xdwb.is-a.dev/senadores/';
+
+function vistaDifusion() {
+  app.textContent = '';
+  const sec = el('section', { class: 'perfil' });
+  const w = el('div', { class: 'wrap' });
+  w.append(el('a', { class: 'volver', href: '#/', text: '← Todos los senadores' }));
+  w.append(el('h1', { class: 'nombre display', text: 'Kit de difusión' }));
+  w.append(el('p', { class: 'meta', style: 'max-width:68ch', text: 'Todo listo para copiar, descargar y postear. La votación se define en los bloques provinciales: ponerles nombre y cara en redes es hacer visible quién decide.' }));
+
+  const p1 = el('div', { class: 'panel' });
+  p1.append(el('h3', { text: 'Texto listo para WhatsApp' }));
+  p1.append(el('p', { style: 'font-size:14px;white-space:pre-wrap', text: TXT_WHATSAPP_KIT }));
+  p1.append(el('div', { class: 'redes', style: 'margin-top:12px' },
+    el('button', { class: 'btn primario', text: 'Copiar texto', onclick: async ev => {
+      try { await navigator.clipboard.writeText(TXT_WHATSAPP_KIT); ev.target.textContent = 'Copiado ✓'; }
+      catch { window.prompt('Copiá el texto:', TXT_WHATSAPP_KIT); }
+      setTimeout(() => { ev.target.textContent = 'Copiar texto'; }, 2000);
+    } }),
+    el('a', { class: 'btn', target: '_blank', rel: 'noopener', href: 'https://wa.me/?text=' + encodeURIComponent(TXT_WHATSAPP_KIT), text: 'Abrir en WhatsApp' }),
+    btnAgendar()));
+  w.append(p1);
+
+  const p2 = el('div', { class: 'panel', style: 'margin-top:16px' });
+  p2.append(el('h3', { text: 'Placas de los 14 votos en juego' }));
+  p2.append(el('p', { style: 'font-size:14px', text: 'Una placa por senador indeciso, con su foto y postura. Descargala, posteala y etiquetalo: la pregunta pública "¿cuál va a ser su voto?" es legítima y pesa.' }));
+  const grid = el('div', { class: 'kit-grid' });
+  SEN.filter(s => s.postura === 'juego')
+    .sort((a, b) => a.provincia.localeCompare(b.provincia, 'es') || a.apellido.localeCompare(b.apellido, 'es'))
+    .forEach(s => {
+      const card = el('div', { class: 'kit-card' });
+      const img = el('img', { src: 'og/' + s.slug + '.jpg', alt: 'Placa de ' + s.apellido, loading: 'lazy' });
+      img.addEventListener('error', () => card.remove());
+      card.append(img);
+      const fila = el('div', { class: 'kit-acciones' });
+      fila.append(el('a', { class: 'btn', href: 'og/' + s.slug + '.jpg', download: 'senado-tierras-' + s.slug + '.jpg', text: 'Descargar' }));
+      const urlTweet = tweetAlSenador(s);
+      if (urlTweet) fila.append(el('a', { class: 'btn', target: '_blank', rel: 'noopener', href: urlTweet, text: 'Mencionar en X' }));
+      fila.append(el('a', { class: 'btn', href: '#/senador/' + s.slug, text: 'Perfil' }));
+      card.append(fila);
+      grid.append(card);
+    });
+  p2.append(grid);
+  w.append(p2);
+
+  sec.append(w);
+  app.append(sec, seccionQueSeVota());
+  document.title = 'Kit de difusión — El Senado y la Tierra';
+  window.scrollTo(0, 0);
+}
+
 function seccionQueSeVota() {
   const sec = el('section', { class: 'quesevota', id: 'que-se-vota' });
   const w = el('div', { class: 'wrap' });
@@ -884,6 +946,36 @@ function shareRow(texto, url) {
 function urlPerfil(s) {
   const enProd = /is-a\.dev$|github\.io$/.test(location.hostname);
   return enProd ? 'https://0xdwb.is-a.dev/senadores/s/' + s.slug + '.html' : location.href;
+}
+
+/* ---------- voz pública: mención en X + agenda ---------- */
+function handleX(url) {
+  const m = String(url || '').match(/(?:twitter\.com|x\.com)\/@?([A-Za-z0-9_]+)/);
+  return m ? m[1] : null;
+}
+function tweetAlSenador(s) {
+  const h = handleX(s.tw);
+  if (!h) return null;
+  const texto = `@${h} La Ley de Tierras vuelve al Senado el 6 de agosto. Según el RNTR, 36 departamentos ya superan el 15% de tierra en manos extranjeras. ¿Cuál va a ser su voto? #LeyDeTierras`;
+  return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(texto) + '&url=' + encodeURIComponent(urlPerfil(s));
+}
+
+const ICS_VOTACION = [
+  'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//El Senado y la Tierra//ES',
+  'BEGIN:VEVENT', 'UID:senado-tierra-20260806@0xdwb.is-a.dev',
+  'DTSTAMP:20260717T120000Z', 'DTSTART;VALUE=DATE:20260806', 'DTEND;VALUE=DATE:20260807',
+  'SUMMARY:El Senado vota la Ley de Tierras',
+  'DESCRIPTION:Último día para escribirle a tus senadores: https://0xdwb.is-a.dev/senadores/',
+  'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY',
+  'DESCRIPTION:Mañana el Senado vota la Ley de Tierras — mandá tu último mail',
+  'END:VALARM', 'END:VEVENT', 'END:VCALENDAR', '',
+].join('\r\n');
+function btnAgendar() {
+  return el('a', {
+    class: 'btn', text: 'Agendar el 6 de agosto',
+    href: 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ICS_VOTACION),
+    download: 'senado-vota-ley-de-tierras.ics',
+  });
 }
 
 /* ---------- generador de stories (1080×1920, todo client-side) ---------- */
@@ -1031,8 +1123,9 @@ function footer() {
     fotos: [],
   }));
   d0.append(filaFoot);
-  d0.append(el('p', { style: 'margin-top:12px' },
-    el('a', { href: '#/campania', text: 'O escribiles a varios de una vez →' })));
+  d0.append(el('p', { style: 'margin-top:12px;display:flex;gap:16px;flex-wrap:wrap' },
+    el('a', { href: '#/campania', text: 'Escribiles a varios de una vez →' }),
+    el('a', { href: '#/difusion', text: 'Kit de difusión →' })));
   w.append(d0, d1, d2);
   f.append(w);
   return f;
@@ -1044,6 +1137,7 @@ function render() {
   const m = h.match(/^#\/senador\/([a-z0-9-]+)/);
   if (m) vistaPerfil(m[1]);
   else if (h.startsWith('#/campania')) vistaCampania();
+  else if (h.startsWith('#/difusion')) vistaDifusion();
   else vistaHome();
   const viejo = document.querySelector('footer');
   if (viejo) viejo.remove();
