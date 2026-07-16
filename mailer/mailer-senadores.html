@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mailer — Senadores · Ley de Tierras</title>
+<style>
+  :root { --azul:#1d4ed8; --azul-osc:#1e3a8a; --gris:#6b7280; --borde:#e5e7eb; --fondo:#f8fafc; --ok:#059669; }
+  * { box-sizing:border-box; margin:0; }
+  body { font:15px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--fondo); color:#111827; padding:24px; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  .sub { color:var(--gris); margin-bottom:20px; font-size:14px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:900px){ .grid { grid-template-columns:1fr; } }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:10px; padding:16px; margin-bottom:16px; }
+  .card h2 { font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--azul-osc); margin-bottom:10px; }
+  label { display:block; font-size:13px; color:var(--gris); margin:8px 0 3px; }
+  input[type=text], textarea { width:100%; border:1px solid var(--borde); border-radius:6px; padding:8px 10px; font:inherit; }
+  textarea { min-height:260px; font-size:13.5px; }
+  .hint { font-size:12.5px; color:var(--gris); margin-top:6px; }
+  .hint code { background:#eef2ff; padding:1px 5px; border-radius:4px; font-size:12px; }
+  .filtros { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  .filtros button { border:1px solid var(--borde); background:#fff; border-radius:20px; padding:5px 14px; font:inherit; font-size:13px; cursor:pointer; }
+  .filtros button.on { background:var(--azul); color:#fff; border-color:var(--azul); }
+  .filtros input { flex:1; min-width:140px; }
+  .prog { font-size:13px; color:var(--gris); margin-bottom:10px; }
+  .barra { height:6px; background:var(--borde); border-radius:3px; overflow:hidden; margin-top:4px; }
+  .barra div { height:100%; background:var(--ok); width:0%; transition:width .3s; }
+  .fila { display:flex; align-items:center; gap:10px; padding:9px 6px; border-top:1px solid var(--borde); }
+  .fila.hecho { opacity:.45; }
+  .fila .info { flex:1; min-width:0; }
+  .fila .nom { font-weight:600; font-size:14px; }
+  .fila .det { font-size:12px; color:var(--gris); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tag { display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:9px; background:#fef3c7; color:#92400e; margin-left:6px; vertical-align:1px; }
+  .btn { border:none; border-radius:6px; padding:7px 12px; font:inherit; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .btn-gmail { background:var(--azul); color:#fff; }
+  .btn-gmail:hover { background:var(--azul-osc); }
+  .btn-sec { background:#eef2ff; color:var(--azul-osc); }
+  .btn-big { width:100%; padding:12px; font-size:15px; font-weight:600; margin-bottom:12px; }
+  .check { width:17px; height:17px; accent-color:var(--ok); cursor:pointer; }
+  #preview { white-space:pre-wrap; font-size:13px; background:#fbfbfd; border:1px dashed var(--borde); border-radius:8px; padding:12px; max-height:340px; overflow:auto; }
+  .aviso { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:16px; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:9px 18px; border-radius:8px; font-size:13.5px; opacity:0; transition:opacity .3s; pointer-events:none; }
+  .toast.ver { opacity:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mailer — Senadores · Capítulo de tierras</h1>
+  <p class="sub">Cada botón abre Gmail con el mail ya personalizado para ese senador — vos solo apretás Enviar. Sin conexión de cuentas ni permisos: el envío lo hacés vos, uno por uno, que es lo que mejor llega.</p>
+  <div class="aviso">💡 Ritmo sugerido: 5-10 mails, pausa de unos minutos, seguís. Envíos manuales espaciados desde tu Gmail no disparan filtros de spam. Tu progreso queda guardado en esta página (podés cerrarla y volver).</div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>1 · Tus datos</h2>
+        <label>Nombre completo</label><input type="text" id="miNombre" placeholder="Juan Pérez">
+        <label>Ciudad y provincia</label><input type="text" id="miLugar" placeholder="San Martín de los Andes, Neuquén">
+        <label>Provincia (para detectar a TUS senadores)</label><input type="text" id="miProv" placeholder="Neuquén">
+        <label>DNI (opcional, suma seriedad)</label><input type="text" id="miDni" placeholder="12.345.678">
+      </div>
+      <div class="card">
+        <h2>2 · Asunto y plantilla</h2>
+        <label>Asunto</label><input type="text" id="asunto">
+        <label>Cuerpo</label><textarea id="plantilla"></textarea>
+        <p class="hint">Variables: <code>{SALUDO}</code> (Estimado Senador / Estimada Senadora) · <code>{APELLIDO}</code> · <code>{NOMBRE_SENADOR}</code> · <code>{PROVINCIA_SENADOR}</code> · <code>{LINEA_PROVINCIA}</code> (agrega "Le escribo especialmente como votante de su provincia." solo si coincide con la tuya) · <code>{MI_NOMBRE}</code> · <code>{MI_LUGAR}</code> · <code>{MI_DNI}</code></p>
+      </div>
+      <div class="card">
+        <h2>Vista previa</h2>
+        <div class="hint" id="previewQuien" style="margin-bottom:6px"></div>
+        <div id="preview"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>3 · Enviar</h2>
+        <button class="btn btn-gmail btn-big" id="btnSiguiente"></button>
+        <div class="filtros">
+          <button id="fPrior" class="on">Prioritarios</button>
+          <button id="fTodos">Todos</button>
+          <input type="text" id="buscar" placeholder="Buscar nombre / provincia / bloque…">
+        </div>
+        <div class="prog"><span id="progTxt"></span><div class="barra"><div id="progBar"></div></div></div>
+        <div id="lista"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SENADORES = [{"apellido": "Abad", "nombre": "Maximiliano", "genero": "M", "provincia": "Buenos Aires", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "maximiliano.abad@senado.gob.ar", "prioritario": true}, {"apellido": "Abdala", "nombre": "Bartolomé Esteban", "genero": "M", "provincia": "San Luis", "bloque": "LA LIBERTAD AVANZA", "email": "bartolome.abdala@senado.gob.ar", "prioritario": false}, {"apellido": "Almeida", "nombre": "Romina María", "genero": "F", "provincia": "Entre Ríos", "bloque": "LA LIBERTAD AVANZA", "email": "romina.almeida@senado.gob.ar", "prioritario": false}, {"apellido": "Alvarez Rivero", "nombre": "Carmen", "genero": "F", "provincia": "Córdoba", "bloque": "LA LIBERTAD AVANZA", "email": "carmen.alvarez@senado.gob.ar", "prioritario": false}, {"apellido": "Andrada", "nombre": "Guillermo Eduardo", "genero": "M", "provincia": "Catamarca", "bloque": "CONVICCIÓN FEDERAL", "email": "guillermo.andrada@senado.gob.ar", "prioritario": true}, {"apellido": "Arce", "nombre": "Carlos Omar", "genero": "M", "provincia": "Misiones", "bloque": "ENCUENTRO MISIONERO", "email": "carlos.arce@senado.gob.ar", "prioritario": true}, {"apellido": "Arrascaeta", "nombre": "Ivanna Marcela", "genero": "F", "provincia": "San Luis", "bloque": "LA LIBERTAD AVANZA", "email": "ivanna.arrascaeta@senado.gob.ar", "prioritario": false}, {"apellido": "Atauche", "nombre": "Ezequiel", "genero": "M", "provincia": "Jujuy", "bloque": "LA LIBERTAD AVANZA", "email": "ezequiel.atauche@senado.gob.ar", "prioritario": false}, {"apellido": "Avila", "nombre": "Beatriz Luisa", "genero": "F", "provincia": "Tucumán", "bloque": "INDEPENDENCIA", "email": "beatriz.avila@senado.gob.ar", "prioritario": true}, {"apellido": "Bahl", "nombre": "Adán Humberto", "genero": "M", "provincia": "Entre Ríos", "bloque": "JUSTICIALISTA", "email": "adan.bahl@senado.gob.ar", "prioritario": false}, {"apellido": "Bedia", "nombre": "Vilma Facunda", "genero": "F", "provincia": "Jujuy", "bloque": "LA LIBERTAD AVANZA", "email": "vilma.bedia@senado.gob.ar", "prioritario": false}, {"apellido": "Benegas Lynch", "nombre": "Joaquín Alberto", "genero": "M", "provincia": "Entre Ríos", "bloque": "LA LIBERTAD AVANZA", "email": "joaquin.benegaslynch@senado.gob.ar", "prioritario": false}, {"apellido": "Bensusán", "nombre": "Daniel Pablo", "genero": "M", "provincia": "La Pampa", "bloque": "JUSTICIALISTA", "email": "daniel.bensusan@senado.gob.ar", "prioritario": false}, {"apellido": "Bullrich", "nombre": "Patricia", "genero": "F", "provincia": "Ciudad Autónoma De Buenos Aires", "bloque": "LA LIBERTAD AVANZA", "email": "patricia.bullrich@senado.gob.ar", "prioritario": false}, {"apellido": "Capitanich", "nombre": "Jorge Milton", "genero": "M", "provincia": "Chaco", "bloque": "JUSTICIALISTA", "email": "jorge.capitanich@senado.gob.ar", "prioritario": false}, {"apellido": "Carambia", "nombre": "José María", "genero": "M", "provincia": "Santa Cruz", "bloque": "MOVERE SANTA CRUZ", "email": "jose.carambia@senado.gob.ar", "prioritario": true}, {"apellido": "Cervi", "nombre": "Mario Pablo", "genero": "M", "provincia": "Neuquén", "bloque": "LA LIBERTAD AVANZA", "email": "mario.cervi@senado.gob.ar", "prioritario": false}, {"apellido": "Corpacci", "nombre": "Lucía Benigna", "genero": "F", "provincia": "Catamarca", "bloque": "JUSTICIALISTA", "email": "lucia.corpacci@senado.gob.ar", "prioritario": false}, {"apellido": "Corroza", "nombre": "Julieta", "genero": "F", "provincia": "Neuquén", "bloque": "LA NEUQUINIDAD", "email": "julieta.corroza@senado.gob.ar", "prioritario": true}, {"apellido": "Coto", "nombre": "Agustín Pedro", "genero": "M", "provincia": "Tierra Del Fuego, Antártida E Islas Del Atlántico Sur", "bloque": "LA LIBERTAD AVANZA", "email": "agustin.coto@senado.gob.ar", "prioritario": false}, {"apellido": "Cristina", "nombre": "Andrea Marcela", "genero": "F", "provincia": "Chubut", "bloque": "FRENTE PRO", "email": "andrea.cristina@senado.gob.ar", "prioritario": true}, {"apellido": "De Pedro", "nombre": "Eduardo Enrique", "genero": "M", "provincia": "Buenos Aires", "bloque": "JUSTICIALISTA", "email": "eduardo.depedro@senado.gob.ar", "prioritario": false}, {"apellido": "Di Tullio", "nombre": "Juliana", "genero": "F", "provincia": "Buenos Aires", "bloque": "JUSTICIALISTA", "email": "juliana.ditullio@senado.gob.ar", "prioritario": false}, {"apellido": "Espínola", "nombre": "Carlos Mauricio", "genero": "M", "provincia": "Corrientes", "bloque": "PROVINCIAS UNIDAS", "email": "carlos.espinola@senado.gob.ar", "prioritario": true}, {"apellido": "Fama", "nombre": "Flavio Sergio", "genero": "M", "provincia": "Catamarca", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "flavio.fama@senado.gob.ar", "prioritario": true}, {"apellido": "Fernández Sagasti", "nombre": "Anabel", "genero": "F", "provincia": "Mendoza", "bloque": "JUSTICIALISTA", "email": "anabel.fernandezsagasti@senado.gob.ar", "prioritario": false}, {"apellido": "Fullone", "nombre": "Enzo Paolo", "genero": "M", "provincia": "Río Negro", "bloque": "LA LIBERTAD AVANZA", "email": "enzo.fullone@senado.gob.ar", "prioritario": false}, {"apellido": "Gadano", "nombre": "Natalia Elena", "genero": "F", "provincia": "Santa Cruz", "bloque": "MOVERE SANTA CRUZ", "email": "natalia.gadano@senado.gob.ar", "prioritario": true}, {"apellido": "Galaretto", "nombre": "Eduardo Horacio", "genero": "M", "provincia": "Santa Fe", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "eduardo.galaretto@senado.gob.ar", "prioritario": true}, {"apellido": "Giménez Navarro", "nombre": "María Celeste", "genero": "F", "provincia": "San Juan", "bloque": "JUSTICIALISTA", "email": "mcgimeneznavarro@senado.gob.ar", "prioritario": false}, {"apellido": "Godoy", "nombre": "Juan Cruz", "genero": "M", "provincia": "Chaco", "bloque": "LA LIBERTAD AVANZA", "email": "juancruz.godoy@senado.gob.ar", "prioritario": false}, {"apellido": "Goerling Lara", "nombre": "Enrique Martín", "genero": "M", "provincia": "Misiones", "bloque": "FRENTE PRO", "email": "martin.goerling@senado.gob.ar", "prioritario": true}, {"apellido": "González", "nombre": "María Teresa Margarita", "genero": "F", "provincia": "Formosa", "bloque": "JUSTICIALISTA", "email": "maria.gonzalez@senado.gob.ar", "prioritario": false}, {"apellido": "Guzmán Coraita", "nombre": "Gonzalo", "genero": "M", "provincia": "Salta", "bloque": "LA LIBERTAD AVANZA", "email": "gonzalo.guzman@senado.gob.ar", "prioritario": false}, {"apellido": "Huala", "nombre": "María Victoria", "genero": "F", "provincia": "La Pampa", "bloque": "FRENTE PRO", "email": "victoria.huala@senado.gob.ar", "prioritario": true}, {"apellido": "Juez", "nombre": "Luis Alfredo", "genero": "M", "provincia": "Córdoba", "bloque": "LA LIBERTAD AVANZA", "email": "luis.juez@senado.gob.ar", "prioritario": false}, {"apellido": "Juri", "nombre": "Mariana", "genero": "F", "provincia": "Mendoza", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "mariana.juri@senado.gob.ar", "prioritario": true}, {"apellido": "Kirchner", "nombre": "Alicia Margarita Antonia", "genero": "F", "provincia": "Santa Cruz", "bloque": "JUSTICIALISTA", "email": "alicia.kirchner@senado.gob.ar", "prioritario": false}, {"apellido": "Kroneberger", "nombre": "Daniel Ricardo", "genero": "M", "provincia": "La Pampa", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "daniel.kroneberger@senado.gob.ar", "prioritario": true}, {"apellido": "Lewandowski", "nombre": "Marcelo Néstor", "genero": "M", "provincia": "Santa Fe", "bloque": "JUSTICIALISTA", "email": "marcelo.lewandowski@senado.gob.ar", "prioritario": false}, {"apellido": "Linares", "nombre": "Carlos Alberto", "genero": "M", "provincia": "Chubut", "bloque": "JUSTICIALISTA", "email": "carlos.linares@senado.gob.ar", "prioritario": false}, {"apellido": "Losada", "nombre": "Carolina", "genero": "F", "provincia": "Santa Fe", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "carolina.losada@senado.gob.ar", "prioritario": true}, {"apellido": "López", "nombre": "Cándida Cristina", "genero": "F", "provincia": "Tierra Del Fuego, Antártida E Islas Del Atlántico Sur", "bloque": "JUSTICIALISTA", "email": "cristina.lopez@senado.gob.ar", "prioritario": false}, {"apellido": "López", "nombre": "María Florencia", "genero": "F", "provincia": "La Rioja", "bloque": "JUSTICIALISTA", "email": "florencia.lopez@senado.gob.ar", "prioritario": false}, {"apellido": "Manzur", "nombre": "Juan Luis", "genero": "M", "provincia": "Tucumán", "bloque": "JUSTICIALISTA", "email": "juan.manzur@senado.gob.ar", "prioritario": false}, {"apellido": "Marks", "nombre": "Ana Inés", "genero": "F", "provincia": "Río Negro", "bloque": "JUSTICIALISTA", "email": "ana.marks@senado.gob.ar", "prioritario": false}, {"apellido": "Mayans", "nombre": "José Miguel Ángel", "genero": "M", "provincia": "Formosa", "bloque": "JUSTICIALISTA", "email": "mayans@senado.gob.ar", "prioritario": false}, {"apellido": "Mendoza", "nombre": "Sandra Mariela", "genero": "F", "provincia": "Tucumán", "bloque": "CONVICCIÓN FEDERAL", "email": "sandra.mendoza@senado.gob.ar", "prioritario": true}, {"apellido": "Moises", "nombre": "María Carolina", "genero": "F", "provincia": "Jujuy", "bloque": "CONVICCIÓN FEDERAL", "email": "maria.moises@senado.gob.ar", "prioritario": true}, {"apellido": "Monte De Oca", "nombre": "María Belén", "genero": "F", "provincia": "Tierra Del Fuego, Antártida E Islas Del Atlántico Sur", "bloque": "LA LIBERTAD AVANZA", "email": "belen.montedeoca@senado.gob.ar", "prioritario": false}, {"apellido": "Monteverde", "nombre": "Agustín Aníbal", "genero": "M", "provincia": "Ciudad Autónoma De Buenos Aires", "bloque": "LA LIBERTAD AVANZA", "email": "agustin.monteverde@senado.gob.ar", "prioritario": false}, {"apellido": "Moreno", "nombre": "Elia Esther Del Carmen", "genero": "F", "provincia": "Santiago Del Estero", "bloque": "FRENTE CÍVICO POR SANTIAGO", "email": "elia.moreno@senado.gob.ar", "prioritario": true}, {"apellido": "Márquez", "nombre": "Nadia Judith", "genero": "F", "provincia": "Neuquén", "bloque": "LA LIBERTAD AVANZA", "email": "nadia.marquez@senado.gob.ar", "prioritario": false}, {"apellido": "Neder", "nombre": "José Emilio", "genero": "M", "provincia": "Santiago Del Estero", "bloque": "JUSTICIALISTA", "email": "jose.neder@senado.gob.ar", "prioritario": false}, {"apellido": "Olivera Lucero", "nombre": "Bruno Antonio", "genero": "M", "provincia": "San Juan", "bloque": "LA LIBERTAD AVANZA", "email": "bruno.olivera@senado.gob.ar", "prioritario": false}, {"apellido": "Orozco", "nombre": "María Emilia", "genero": "F", "provincia": "Salta", "bloque": "LA LIBERTAD AVANZA", "email": "maria.orozco@senado.gob.ar", "prioritario": false}, {"apellido": "Pagotto", "nombre": "Juan Carlos", "genero": "M", "provincia": "La Rioja", "bloque": "LA LIBERTAD AVANZA", "email": "juan.pagotto@senado.gob.ar", "prioritario": false}, {"apellido": "Paoltroni", "nombre": "Francisco Manuel", "genero": "M", "provincia": "Formosa", "bloque": "LA LIBERTAD AVANZA", "email": "francisco.paoltroni@senado.gob.ar", "prioritario": false}, {"apellido": "Recalde", "nombre": "Mariano", "genero": "M", "provincia": "Ciudad Autónoma De Buenos Aires", "bloque": "JUSTICIALISTA", "email": "mariano.recalde@senado.gob.ar", "prioritario": false}, {"apellido": "Rejal", "nombre": "Jesús Fernando", "genero": "M", "provincia": "La Rioja", "bloque": "JUSTICIA SOCIAL FEDERAL", "email": "jesus.rejal@senado.gob.ar", "prioritario": true}, {"apellido": "Rojas Decut", "nombre": "Sonia Elizabeth", "genero": "F", "provincia": "Misiones", "bloque": "ENCUENTRO MISIONERO", "email": "sonia.rojas@senado.gob.ar", "prioritario": true}, {"apellido": "Royon", "nombre": "Flavia Gabriela", "genero": "F", "provincia": "Salta", "bloque": "PRIMERO LOS SALTEÑOS", "email": "flavia.royon@senado.gob.ar", "prioritario": true}, {"apellido": "Salino", "nombre": "Fernando Aldo", "genero": "M", "provincia": "San Luis", "bloque": "JUSTICIA SOCIAL FEDERAL", "email": "fernando.salino@senado.gob.ar", "prioritario": true}, {"apellido": "Schneider", "nombre": "Silvana Lorena", "genero": "F", "provincia": "Chaco", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "silvana.schneider@senado.gob.ar", "prioritario": true}, {"apellido": "Soria", "nombre": "Martin Ignacio", "genero": "M", "provincia": "Río Negro", "bloque": "JUSTICIALISTA", "email": "martin.soria@senado.gob.ar", "prioritario": false}, {"apellido": "Suárez", "nombre": "Rodolfo Alejandro", "genero": "M", "provincia": "Mendoza", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "rodolfo.suarez@senado.gob.ar", "prioritario": true}, {"apellido": "Terenzi", "nombre": "Edith Elizabeth", "genero": "F", "provincia": "Chubut", "bloque": "DESPIERTA CHUBUT", "email": "edith.terenzi@senado.gob.ar", "prioritario": true}, {"apellido": "Uñac", "nombre": "Sergio Mauricio", "genero": "M", "provincia": "San Juan", "bloque": "JUSTICIALISTA", "email": "sergio.unac@senado.gob.ar", "prioritario": false}, {"apellido": "Valenzuela", "nombre": "Mercedes Gabriela", "genero": "F", "provincia": "Corrientes", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "mercedes.valenzuela@senado.gob.ar", "prioritario": true}, {"apellido": "Vigo", "nombre": "Alejandra María", "genero": "F", "provincia": "Córdoba", "bloque": "PROVINCIAS UNIDAS", "email": "alejandra.vigo@senado.gob.ar", "prioritario": true}, {"apellido": "Vischi", "nombre": "Eduardo Alejandro", "genero": "M", "provincia": "Corrientes", "bloque": "UCR - UNIÓN CÍVICA RADICAL", "email": "eduardo.vischi@senado.gob.ar", "prioritario": true}, {"apellido": "Zamora", "nombre": "Gerardo", "genero": "M", "provincia": "Santiago Del Estero", "bloque": "FRENTE CÍVICO POR SANTIAGO", "email": "gerardo.zamora@senado.gob.ar", "prioritario": true}];
+const ASUNTO_DEF = "Pedido de un ciudadano sobre el capítulo de tierras del proyecto de Propiedad Privada";
+const PLANTILLA_DEF = "{SALUDO} {APELLIDO}:\n\nMe llamo {MI_NOMBRE}, soy ciudadano/a de {MI_LUGAR}. {LINEA_PROVINCIA}Le escribo por el proyecto de Inviolabilidad de la Propiedad Privada que se trata hoy en el Senado. No le pido rechazar el proyecto completo: varios de sus capítulos atienden reclamos legítimos. Le pido que en la votación en particular rechace o modifique el capítulo que deroga los límites de la Ley de Tierras Rurales 26.737 — porque en el contexto del resto del articulado, ese capítulo convierte a la ley en otra cosa.\n\nSobre el argumento del 5%: es cierto que la extranjerización nacional es del 5%, pero ese promedio esconde el dato relevante. Según el propio Registro Nacional de Tierras Rurales (investigación de Chequeado, fuente no partidaria), 36 departamentos ya superan el 15% y 4 superan el 50% (Lácar en Neuquén, General Lamadrid en La Rioja, Molinos y San Carlos en Salta). La compra extranjera no se distribuye pareja: se concentra en cordillera, lagos, nacientes de agua y frontera. El tope departamental que se elimina era el único freno que operaba exactamente ahí. Y la opacidad ya es alta: unos 2 millones de hectáreas en manos de sociedades de paraísos fiscales y 2,2 millones cuya nacionalidad el Estado ni siquiera registra.\n\nPor qué el resto del proyecto agrava este capítulo — dos interacciones que merecen mirarse en conjunto:\n\n1) Irreversibilidad. El capítulo de expropiaciones — razonable en sí mismo — indemniza lucro cesante, indexa por IPC y exige pago íntegro previo a la posesión. Combinado con la venta sin tope, significa que si una operación resulta lesiva del interés nacional (una cuenca, un paso fronterizo), recuperarla será económicamente prohibitivo para cualquier gobierno futuro, del signo que sea.\n\n2) Territorio en disputa. Con la Ley 26.160 ya derogada (Decreto 1083/2024) y la restitución anticipada en 5 días mediante declaración jurada que introduce este proyecto, la posesión no titulada en las zonas de mayor demanda extranjera queda desalojable a velocidad inédita — despejando títulos justo donde el capítulo de tierras elimina los topes.\n\nSobre el diseño del capítulo en sí: el silencio administrativo positivo de 180 días en zonas de seguridad de frontera implica que un extranjero puede quedar como propietario pleno de tierra fronteriza por simple inacción del Estado. Ningún país de la región convalida soberanía territorial por vencimiento de plazo.\n\nExiste una alternativa concreta en el recinto: el dictamen de minoría con \"Zonas de Interés Estratégico\", que permite atraer inversión sin resignar control sobre agua, frontera y recursos críticos. La facultad de veto provincial del dictamen de mayoría no la reemplaza: arranca en vacío normativo hasta que cada legislatura sancione un régimen propio, si es que lo hace.\n\nSu voto en este capítulo define algo difícil de revertir. Le agradezco su tiempo y su consideración.\n\n{MI_NOMBRE}\n{MI_DNI}{MI_LUGAR}";
+
+const $ = id => document.getElementById(id);
+const store = {
+  get k() { return 'mailer-senadores'; },
+  load() { try { return JSON.parse(localStorage.getItem(this.k)) || {}; } catch { return {}; } },
+  save(obj) { localStorage.setItem(this.k, JSON.stringify(obj)); }
+};
+let st = store.load();
+st.hechos = st.hechos || {};
+let filtro = st.filtro || 'prior';
+let sel = null;
+
+['miNombre','miLugar','miProv','miDni'].forEach(id => { $(id).value = st[id] || ''; });
+$('asunto').value = st.asunto || ASUNTO_DEF;
+$('plantilla').value = st.plantilla || PLANTILLA_DEF;
+
+function persist() {
+  ['miNombre','miLugar','miProv','miDni'].forEach(id => st[id] = $(id).value);
+  st.asunto = $('asunto').value; st.plantilla = $('plantilla').value; st.filtro = filtro;
+  store.save(st);
+}
+
+function normalizar(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+function visibles() {
+  const q = normalizar($('buscar').value);
+  return SENADORES.filter(s => {
+    if (filtro === 'prior' && !s.prioritario) return false;
+    if (!q) return true;
+    return normalizar(s.apellido + ' ' + s.nombre + ' ' + s.provincia + ' ' + s.bloque).includes(q);
+  });
+}
+
+function renderMail(s) {
+  const esMiProv = normalizar($('miProv').value) && normalizar(s.provincia).includes(normalizar($('miProv').value));
+  const dni = $('miDni').value.trim();
+  const cuerpo = $('plantilla').value
+    .replaceAll('{SALUDO}', s.genero === 'F' ? 'Estimada Senadora' : 'Estimado Senador')
+    .replaceAll('{APELLIDO}', s.apellido)
+    .replaceAll('{NOMBRE_SENADOR}', s.nombre)
+    .replaceAll('{PROVINCIA_SENADOR}', s.provincia)
+    .replaceAll('{LINEA_PROVINCIA}', esMiProv ? 'Le escribo especialmente como votante de su provincia. ' : '')
+    .replaceAll('{MI_NOMBRE}', $('miNombre').value || '[TU NOMBRE]')
+    .replaceAll('{MI_LUGAR}', $('miLugar').value || '[TU CIUDAD, PROVINCIA]')
+    .replaceAll('{MI_DNI}', dni ? 'DNI ' + dni + '\n' : '');
+  return { asunto: $('asunto').value, cuerpo };
+}
+
+function abrirGmail(s) {
+  const m = renderMail(s);
+  const url = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(s.email) +
+              '&su=' + encodeURIComponent(m.asunto) + '&body=' + encodeURIComponent(m.cuerpo);
+  window.open(url, '_blank');
+  st.hechos[s.email] = true; persist(); render();
+  toast('Abierto: ' + s.apellido + ' — revisá la pestaña de Gmail y apretá Enviar');
+}
+
+async function copiar(s) {
+  const m = renderMail(s);
+  await navigator.clipboard.writeText('Para: ' + s.email + '\nAsunto: ' + m.asunto + '\n\n' + m.cuerpo);
+  toast('Copiado al portapapeles: ' + s.apellido);
+}
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('ver');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('ver'), 3200);
+}
+
+function render() {
+  const vs = visibles();
+  const pendientes = vs.filter(s => !st.hechos[s.email]);
+  const hechos = vs.length - pendientes.length;
+  $('fPrior').classList.toggle('on', filtro === 'prior');
+  $('fTodos').classList.toggle('on', filtro === 'todos');
+  $('progTxt').textContent = hechos + ' de ' + vs.length + ' abiertos';
+  $('progBar').style.width = (vs.length ? 100 * hechos / vs.length : 0) + '%';
+  $('btnSiguiente').textContent = pendientes.length
+    ? '✉️ Abrir siguiente en Gmail — ' + pendientes[0].apellido + ' (' + pendientes[0].provincia + ')'
+    : '✅ Lista completa';
+  $('btnSiguiente').disabled = !pendientes.length;
+
+  const lista = $('lista'); lista.innerHTML = '';
+  vs.forEach(s => {
+    const fila = document.createElement('div');
+    fila.className = 'fila' + (st.hechos[s.email] ? ' hecho' : '');
+    const esMiProv = normalizar($('miProv').value) && normalizar(s.provincia).includes(normalizar($('miProv').value));
+    fila.innerHTML =
+      '<input type="checkbox" class="check" ' + (st.hechos[s.email] ? 'checked' : '') + ' title="Marcar como enviado">' +
+      '<div class="info"><div class="nom">' + s.apellido + ', ' + s.nombre + (esMiProv ? '<span class="tag">TU PROVINCIA</span>' : '') + '</div>' +
+      '<div class="det">' + s.provincia + ' · ' + s.bloque + '</div></div>' +
+      '<button class="btn btn-sec">Copiar</button><button class="btn btn-gmail">Gmail</button>';
+    fila.querySelector('.check').onchange = e => { st.hechos[s.email] = e.target.checked; persist(); render(); };
+    fila.querySelector('.btn-sec').onclick = () => copiar(s);
+    fila.querySelector('.btn-gmail').onclick = () => abrirGmail(s);
+    fila.querySelector('.info').onclick = () => { sel = s; renderPreview(); };
+    lista.appendChild(fila);
+  });
+  if (!sel && vs.length) sel = vs[0];
+  renderPreview();
+}
+
+function renderPreview() {
+  if (!sel) { $('preview').textContent = ''; $('previewQuien').textContent = ''; return; }
+  $('previewQuien').textContent = 'Así le llega a ' + sel.apellido + ' (' + sel.email + ') — clickeá otra fila para cambiar:';
+  $('preview').textContent = renderMail(sel).cuerpo;
+}
+
+$('btnSiguiente').onclick = () => { const p = visibles().filter(s => !st.hechos[s.email]); if (p.length) { sel = p[0]; abrirGmail(p[0]); } };
+$('fPrior').onclick = () => { filtro = 'prior'; persist(); render(); };
+$('fTodos').onclick = () => { filtro = 'todos'; persist(); render(); };
+$('buscar').oninput = render;
+document.querySelectorAll('input[type=text], textarea').forEach(el => el.addEventListener('input', () => { persist(); renderPreview(); render(); }));
+render();
+</script>
+</body>
+</html>
