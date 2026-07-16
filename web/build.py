@@ -48,8 +48,9 @@ def main() -> None:
     OUT_ARTIFACT.write_text(contenido)
 
     og_desc = (
-        "Encontrá a tus senadores, mirá la postura de su bloque sobre la Ley de "
-        "Tierras y escribiles en un click. Datos oficiales del Senado y del RNTR."
+        "No se votó el 16/7 — vuelve al Senado el 6 de agosto. Encontrá a tus "
+        "senadores, mirá la postura de su bloque y escribiles en un click: el "
+        "mail sale pre-armado."
     )
     canonical = "https://0xdwb.is-a.dev/senadores/"
     favicon = (
@@ -83,10 +84,73 @@ def main() -> None:
     )
     OUT_FULL.write_text(full)
 
+    prerender_perfiles(json.loads((BASE / "data" / "senadores-web.json").read_text()))
+
     kb_full = len(full.encode()) / 1024
     print(f"OK · artifact.html {len(contenido.encode())/1024:.0f}KB · index.html {kb_full:.0f}KB (budget 200KB)")
     if kb_full > 200:
         sys.exit("ERROR: se pasó del budget de 200KB")
+
+
+CANONICAL = "https://0xdwb.is-a.dev/senadores/"
+
+
+def prerender_perfiles(senadores: list) -> None:
+    """72 mini-páginas s/<slug>.html con OG propia (nombre + tarjeta con foto).
+
+    Los crawlers de WhatsApp/X nunca ven el fragment #/senador/x, así que las
+    URLs que se comparten desde un perfil apuntan acá; la página redirige a la
+    SPA al instante. También genera sitemap.xml y robots.txt.
+    """
+    import html
+
+    s_dir = BASE / "s"
+    s_dir.mkdir(exist_ok=True)
+    urls = [CANONICAL]
+    for s in senadores:
+        slug = s["slug"]
+        cargo = "Senadora nacional" if s["genero"] == "F" else "Senador nacional"
+        titulo = html.escape(f"{s['apellido']}, {s['nombre']} — {cargo} por {s['provincia']}")
+        desc = html.escape(
+            f"{s['posturaLabel']} frente a la Ley de Tierras, que vuelve al Senado "
+            "el 6 de agosto. Escribile en un click: el mail sale pre-armado."
+        )
+        hash_url = f"{CANONICAL}#/senador/{slug}"
+        pagina = f"""<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>{titulo}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="{titulo}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{CANONICAL}s/{slug}.html">
+<meta property="og:image" content="{CANONICAL}og/{slug}.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_AR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{CANONICAL}og/{slug}.jpg">
+<link rel="canonical" href="{hash_url}">
+<meta http-equiv="refresh" content="0; url=../#/senador/{slug}">
+<script>location.replace("../#/senador/{slug}");</script>
+</head>
+<body>
+<p>Abriendo el perfil… <a href="../#/senador/{slug}">Ver el perfil de {titulo}</a></p>
+</body>
+</html>
+"""
+        (s_dir / f"{slug}.html").write_text(pagina)
+        urls.append(f"{CANONICAL}s/{slug}.html")
+
+    sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    sitemap += [f"<url><loc>{u}</loc></url>" for u in urls]
+    sitemap.append("</urlset>")
+    (BASE / "sitemap.xml").write_text("\n".join(sitemap) + "\n")
+    (BASE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {CANONICAL}sitemap.xml\n")
+    print(f"prerender: {len(senadores)} perfiles en s/ · sitemap.xml · robots.txt")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://0xdwb.is-a.dev/senadores/sitemap.xml
