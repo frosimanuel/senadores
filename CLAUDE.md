@@ -6,7 +6,7 @@ Web pública de perfiles de los 72 senadores argentinos, centrada en la votació
 
 - El proyecto deroga los topes de la Ley de Tierras 26.737 (15% nacional/provincial/departamental, 30% por nacionalidad, 1.000 ha zona núcleo) y crea silencio administrativo positivo de 180 días en zonas de frontera. Las provincias reciben facultad de autorizar/regular/vetar.
 - Ingresó por el **Senado** (cámara de origen). Si se aprueba → media sanción → Diputados.
-- Sesión del 16/07/2026 convocada a las 12hs; quórum en duda (3+ radicales ausentes, cruce Villarruel-Bullrich). **Resultado pendiente de confirmar** — actualizar `data/estado-votacion.json` cuando se sepa.
+- Sesión del 16/07/2026: hubo quórum y se aprobaron pliegos judiciales, pero al llegar al proyecto Bullrich pidió **cuarto intermedio hasta el 06/08/2026** — el oficialismo no tenía los votos para el capítulo de tierras (llegó a circular una "versión 15" del texto horas antes). Fuentes: Ámbito n6300262, Infobae en-vivo 16/07. Banner actualizado (estado `postergada`). Próximo hito: sesión del 6 de agosto.
 - Datos clave (RNTR vía Chequeado, citables): extranjerización nacional 5,02% (12,5M ha), PERO 36 departamentos >15% y 4 >50% (Lácar/Neuquén, Gral. Lamadrid/La Rioja, Molinos y San Carlos/Salta). ~2M ha en paraísos fiscales, 2,2M ha de nacionalidad desconocida.
 
 ## Estructura
