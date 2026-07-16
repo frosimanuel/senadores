@@ -58,7 +58,8 @@
     font: inherit; color: var(--tinta); background: #fff;
     border: 1px solid var(--tinta); border-radius: 3px; padding: 10px 12px;
   }
-  .prov-pick select { min-width: 240px; border-width: 2px; }
+  .prov-pick { max-width: 100%; }
+  .prov-pick select { min-width: 240px; max-width: calc(100vw - 40px); border-width: 2px; }
 
   /* Números RNTR */
   .numeros { background: var(--tinta); color: #EDF2F6; padding: 34px 0; }
@@ -111,6 +112,7 @@
     border: 2px solid var(--celeste); display: grid; place-items: center;
     font-size: 15px; letter-spacing: .04em; color: var(--tinta); }
   .esc.grande { width: 76px; height: 76px; font-size: 24px; border-width: 3px; }
+  .esc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
   .card .quien { min-width: 0; }
   .card .nom { font-weight: 600; font-size: 15px; line-height: 1.3; }
   .card .det { font-size: 12.5px; color: var(--tinta-70); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -156,12 +158,33 @@
   .quesevota li { margin-bottom: 7px; }
   .quesevota .aclara { font-size: 13px; color: var(--tinta-70); margin-top: 14px; max-width: 75ch; }
 
+  /* Modo campaña */
+  .camp-grupos { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 6px; }
+  .camp-grupos .btn[aria-pressed="true"] { background: var(--tinta); color: #fff; }
+  .camp-prog { margin: 14px 0 20px; }
+  .camp-prog .txt { font-size: 14px; font-weight: 600; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+  .camp-prog .barra { height: 8px; background: var(--borde); border-radius: 4px; overflow: hidden; }
+  .camp-prog .barra > div { height: 100%; background: var(--dorado); border-radius: 4px; transition: width .2s; }
+  @media (prefers-reduced-motion: reduce) { .camp-prog .barra > div { transition: none; } }
+  .camp-row {
+    display: flex; gap: 12px; align-items: center; padding: 10px 12px; margin-bottom: 8px;
+    background: #fff; border: 1px solid var(--borde); border-radius: 4px;
+  }
+  .camp-row.enviado { background: var(--fondo); }
+  .camp-row.enviado .quien { opacity: .55; }
+  .camp-row .quien { flex: 1; min-width: 0; }
+  .camp-row .nom { font-weight: 600; font-size: 15px; }
+  .camp-row .det { font-size: 12.5px; color: var(--tinta-70); }
+  .camp-row .acciones { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .camp-check { font: inherit; font-size: 13px; cursor: pointer; background: none; border: 1px solid var(--borde); border-radius: 3px; padding: 8px 10px; color: var(--tinta-70); }
+  .camp-row.enviado .camp-check { color: var(--dorado-texto); border-color: var(--dorado); font-weight: 600; }
+  @media (max-width: 560px) { .camp-row { flex-wrap: wrap; } .camp-row .acciones { width: 100%; justify-content: flex-start; } }
+
   /* Footer */
   footer { background: var(--tinta); color: #B9C6D1; padding: 40px 0 50px; font-size: 13.5px; }
   footer .wrap { display: grid; gap: 18px; }
   footer h4 { color: #EDF2F6; font-size: 13px; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 6px; }
   footer a { color: #D6E2EC; }
-  footer .en { border-top: 1px solid #2A3947; padding-top: 16px; font-style: italic; }
   .skip { position: absolute; left: -9999px; top: 0; background: #fff; padding: 10px; z-index: 10; }
   .skip:focus { left: 10px; }
 </style>
@@ -201,6 +224,16 @@ function el(tag, attrs, ...hijos) {
   return n;
 }
 function stanceVars(s) { return `--sc:${ST[s.postura].color};--ic:${ST[s.postura].ic}`; }
+
+/* Medallón: foto oficial del Senado si está disponible; si no (o si la CSP
+   del entorno bloquea la carga), caen las iniciales. */
+function medallon(s, grande) {
+  const esc = el('span', { class: 'esc' + (grande ? ' grande' : ''), 'aria-hidden': 'true' });
+  const img = el('img', { src: 'fotos/' + s.slug + '.jpg', alt: '', loading: 'lazy' });
+  img.addEventListener('error', () => { img.remove(); esc.textContent = s.iniciales; });
+  esc.append(img);
+  return esc;
+}
 
 function mailBody(s) {
   const saludo = s.genero === 'F' ? 'Estimada Senadora' : 'Estimado Senador';
@@ -261,6 +294,8 @@ function vistaHome() {
   PROVINCIAS.forEach(p => sel.append(el('option', { value: p, text: p, ...(filtro.prov === p ? { selected: '' } : {}) })));
   pick.append(sel);
   hero.append(pick);
+  hero.append(el('p', { style: 'margin-top:18px' },
+    el('a', { class: 'btn primario', href: '#/campania', text: '✉ Escribiles a varios senadores de una vez' })));
   app.append(hero, el('hr', { class: 'guarda' }));
 
   const nums = el('section', { class: 'numeros', 'aria-label': 'Datos del Registro Nacional de Tierras Rurales' });
@@ -340,7 +375,7 @@ function renderLista() {
     const cards = el('div', { class: 'cards' });
     grupo.sort((a, b) => a.apellido.localeCompare(b.apellido, 'es')).forEach(s => {
       const card = el('a', { class: 'card', href: '#/senador/' + s.slug, style: stanceVars(s) });
-      card.append(el('span', { class: 'esc', 'aria-hidden': 'true', text: s.iniciales }));
+      card.append(medallon(s));
       const q2 = el('span', { class: 'quien' });
       q2.append(el('span', { class: 'nom', text: `${s.apellido}, ${s.nombre}` }));
       q2.append(el('br'));
@@ -373,7 +408,7 @@ function vistaPerfil(slug) {
     return;
   }
   const head = el('div', { class: 'perfil-head' });
-  head.append(el('span', { class: 'esc grande', 'aria-hidden': 'true', text: s.iniciales }));
+  head.append(medallon(s, true));
   head.append(el('h1', { class: 'nombre display', text: `${s.apellido}, ${s.nombre}` }));
   w.append(head);
   w.append(el('p', { class: 'meta', text: `Senador${s.genero === 'F' ? 'a' : ''} nacional por ${s.provincia} · ${s.bloque}${s.partido ? ' · ' + s.partido : ''}` }));
@@ -424,6 +459,121 @@ function vistaPerfil(slug) {
   sec.append(w);
   app.append(sec, seccionQueSeVota());
   document.title = `${s.apellido} — El Senado y la Tierra`;
+  window.scrollTo(0, 0);
+}
+
+/* ---------- modo campaña: escribirle a varios, con progreso ---------- */
+let campania = { grupo: 'juego', prov: '' };
+
+function enviadosGet() {
+  try { return JSON.parse(localStorage.getItem('campania-enviados') || '{}'); }
+  catch { return window.__envMem || (window.__envMem = {}); }
+}
+function enviadosSet(m) {
+  try { localStorage.setItem('campania-enviados', JSON.stringify(m)); }
+  catch { window.__envMem = m; }
+}
+function marcarEnviado(slug, valor) {
+  const m = enviadosGet();
+  if (valor) m[slug] = new Date().toISOString(); else delete m[slug];
+  enviadosSet(m);
+}
+
+const CAMP_GRUPOS = [
+  { id: 'juego', label: 'Votos en juego', filtra: s => s.postura === 'juego',
+    nota: 'Los bloques provinciales que todavía no fijaron posición: acá cada mail pesa más.' },
+  { id: 'definen', label: 'En juego + dictamen', filtra: s => s.postura === 'juego' || s.postura === 'dictamen',
+    nota: 'Indecisos más los bloques que firmaron el dictamen de mayoría pero pueden pedir cambios.' },
+  { id: 'prov', label: 'Mi provincia', filtra: null,
+    nota: 'Tus tres senadores te representan a vos: son los que más deberían escucharte.' },
+  { id: 'todos', label: 'Los 72', filtra: () => true,
+    nota: 'La campaña completa, cámara entera.' },
+];
+
+function vistaCampania() {
+  app.textContent = '';
+  const sec = el('section', { class: 'perfil' });
+  const w = el('div', { class: 'wrap' });
+  w.append(el('a', { class: 'volver', href: '#/', text: '← Todos los senadores' }));
+  w.append(el('h1', { class: 'nombre display', text: 'Escribiles a varios' }));
+  w.append(el('p', { class: 'meta', style: 'max-width:68ch', text: 'Elegí un grupo y abrí un mail por senador: cada uno sale de tu Gmail, con su nombre y saludo correctos — eso vale mucho más que una cadena con copias. El progreso queda guardado en este navegador y podés marcarlo o desmarcarlo a mano.' }));
+
+  const grupos = el('div', { class: 'camp-grupos', role: 'group', 'aria-label': 'Elegir grupo de senadores' });
+  CAMP_GRUPOS.forEach(g => {
+    grupos.append(el('button', {
+      class: 'btn', 'aria-pressed': String(campania.grupo === g.id),
+      text: g.label,
+      onclick: () => { campania.grupo = g.id; render(); },
+    }));
+  });
+  w.append(grupos);
+
+  const g = CAMP_GRUPOS.find(x => x.id === campania.grupo);
+  let lista;
+  if (g.id === 'prov') {
+    const pick = el('div', { class: 'prov-pick', style: 'margin:10px 0 4px' });
+    const sel = el('select', { 'aria-label': 'Elegí tu provincia', onchange: e => { campania.prov = e.target.value; render(); } });
+    sel.append(el('option', { value: '', text: 'Elegí tu provincia' }));
+    PROVINCIAS.forEach(p => sel.append(el('option', { value: p, text: p, ...(campania.prov === p ? { selected: '' } : {}) })));
+    pick.append(sel);
+    w.append(pick);
+    lista = campania.prov ? SEN.filter(s => s.provincia === campania.prov) : [];
+  } else {
+    lista = SEN.filter(g.filtra);
+  }
+  w.append(el('p', { class: 'nota', style: 'color:var(--tinta-70);font-size:14px;margin-top:6px', text: g.nota }));
+
+  const enviados = enviadosGet();
+  const hechos = lista.filter(s => enviados[s.slug]).length;
+
+  if (lista.length) {
+    const prog = el('div', { class: 'camp-prog' });
+    prog.append(el('div', { class: 'txt', text: `${hechos} de ${lista.length} enviados` }));
+    const barra = el('div', { class: 'barra', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(lista.length), 'aria-valuenow': String(hechos) });
+    barra.append(el('div', { style: `width:${lista.length ? (hechos / lista.length) * 100 : 0}%` }));
+    prog.append(barra);
+    w.append(prog);
+  }
+
+  lista
+    .slice()
+    .sort((a, b) => Number(Boolean(enviados[a.slug])) - Number(Boolean(enviados[b.slug])) || a.apellido.localeCompare(b.apellido, 'es'))
+    .forEach(s => {
+      const hecho = Boolean(enviados[s.slug]);
+      const row = el('div', { class: 'camp-row' + (hecho ? ' enviado' : ''), style: stanceVars(s) });
+      row.append(medallon(s));
+      const quien = el('div', { class: 'quien' });
+      quien.append(el('div', { class: 'nom' }, el('a', { href: '#/senador/' + s.slug, text: `${s.apellido}, ${s.nombre}` })));
+      quien.append(el('div', { class: 'det', text: s.provincia + ' · ' }), );
+      quien.lastChild.append(el('span', { class: 'chip', text: ST[s.postura].corto }));
+      row.append(quien);
+      const acc = el('div', { class: 'acciones' });
+      acc.append(el('a', {
+        class: 'btn primario', href: gmailUrl(s), target: '_blank', rel: 'noopener',
+        text: hecho ? '✉ Reabrir Gmail' : '✉ Abrir Gmail',
+        onclick: () => { marcarEnviado(s.slug, true); setTimeout(render, 150); },
+      }));
+      acc.append(el('button', {
+        class: 'camp-check', 'aria-pressed': String(hecho),
+        text: hecho ? '✓ Enviado' : 'Marcar enviado',
+        onclick: () => { marcarEnviado(s.slug, !hecho); render(); },
+      }));
+      row.append(acc);
+      w.append(row);
+    });
+
+  if (lista.length) {
+    w.append(el('p', { class: 'tel-nota', style: 'margin-top:14px', text: 'Cada mail se abre como borrador en Gmail: completá tu nombre y ciudad antes de enviar. Mandalos de a uno y con calma — Gmail puede frenar ráfagas muy rápidas.' }));
+    if (hechos) {
+      w.append(el('button', { class: 'btn', style: 'margin-top:10px', text: 'Reiniciar progreso del grupo', onclick: () => {
+        lista.forEach(s => marcarEnviado(s.slug, false)); render();
+      } }));
+    }
+  }
+
+  sec.append(w);
+  app.append(sec, seccionQueSeVota());
+  document.title = 'Escribiles a varios — El Senado y la Tierra';
   window.scrollTo(0, 0);
 }
 
@@ -490,9 +640,7 @@ function footer() {
   const d0 = el('div');
   d0.append(el('h4', { text: 'Hacé circular el sitio' }));
   d0.append(shareRow('72 personas deciden quién puede comprar la Argentina. Encontrá a tus senadores, mirá su postura sobre la Ley de Tierras y escribiles:'));
-  const d3 = el('div', { class: 'en' });
-  d3.append(el('p', { text: 'EN · Argentina’s Senate is debating a bill that removes the caps on foreign ownership of rural land (currently 15% per district). This citizen-run site profiles all 72 senators, their bloc’s position, and how to reach them. Sources: official Senate open data and the National Registry of Rural Land.' }));
-  w.append(d0, d1, d2, d3);
+  w.append(d0, d1, d2);
   f.append(w);
   return f;
 }
@@ -502,6 +650,7 @@ function render() {
   const h = location.hash || '#/';
   const m = h.match(/^#\/senador\/([a-z0-9-]+)/);
   if (m) vistaPerfil(m[1]);
+  else if (h.startsWith('#/campania')) vistaCampania();
   else vistaHome();
   const viejo = document.querySelector('footer');
   if (viejo) viejo.remove();

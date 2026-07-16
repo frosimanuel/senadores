@@ -6,9 +6,10 @@
 
 ## Qué hace
 
-- Perfil de cada uno de los 72 senadores: provincia, bloque, postura del bloque frente al proyecto, contacto oficial y redes.
+- Perfil de cada uno de los 72 senadores, con su foto oficial: provincia, bloque, postura del bloque frente al proyecto, contacto oficial y redes.
 - Datos de extranjerización de tierras por provincia (RNTR, vía Chequeado).
 - Botón para escribirle a cada senador por Gmail con un mail prellenado y editable.
+- Modo campaña (`#/campania`): escribile a un grupo entero — tus senadores, los votos en juego o los 72 — con progreso guardado en tu navegador.
 - Botones para compartir por WhatsApp y X.
 
 ## Metodología y fuentes
@@ -23,6 +24,7 @@
 ```
 data/    senadores-full.json (crudo oficial) · senadores-web.json (normalizado) · estado-votacion.json (banner)
 web/     template.html + build.py → index.html (Pages) y artifact.html
+fotos/   fotos oficiales de los senadores (datos abiertos del Senado), una por slug
 mailer/  herramienta local de mail-merge con Gmail
 docs/    plan y decisiones
 ```
