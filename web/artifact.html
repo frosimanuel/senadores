@@ -260,7 +260,18 @@ function mailBody(s) {
 /* Logo de Gmail inline (estático — nunca lleva datos) sobre chip blanco */
 const GMAIL_SVG = '<svg width="15" height="12" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path fill="#4285f4" d="M1.636 18h3.819V9.273L0 5.182v11.182C0 17.269.732 18 1.636 18z"/><path fill="#34a853" d="M18.545 18h3.819c.904 0 1.636-.731 1.636-1.636V5.182l-5.455 4.091z"/><path fill="#fbbc04" d="M18.545 3v6.273L24 5.182V3.818c0-2.023-2.309-3.177-3.927-1.964z"/><path fill="#ea4335" d="M5.455 9.273V3l6.545 4.91L18.545 3v6.273L12 14.182z"/><path fill="#c5221f" d="M0 3.818v1.364l5.455 4.091V3L3.927 1.854C2.309.64 0 1.795 0 3.818z"/></svg>';
 function btnGmail(attrs, texto) {
-  const a = el('a', Object.assign({ class: 'btn primario btn-gmail', target: '_blank', rel: 'noopener' }, attrs));
+  const fallback = attrs.fallback;
+  const clickExtra = attrs.onclick;
+  delete attrs.fallback;
+  delete attrs.onclick;
+  const base = { class: 'btn primario btn-gmail', rel: 'noopener' };
+  if (String(attrs.href || '').startsWith('http')) base.target = '_blank';
+  const a = el('a', Object.assign(base, attrs, {
+    onclick: ev => {
+      if (clickExtra) clickExtra(ev);
+      if (fallback) armarFallback(fallback);
+    },
+  }));
   const ic = el('span', { class: 'ic', 'aria-hidden': 'true' });
   ic.innerHTML = GMAIL_SVG;
   a.append(ic, el('span', { text: texto }));
@@ -276,14 +287,32 @@ function gmailUrl(s) {
 function mailtoUrl(s) {
   return 'mailto:' + s.email + '?subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBody(s));
 }
-/* En móvil el mail sale por la app nativa (funciona incluso dentro del visor
-   de Instagram); en desktop, por Gmail web. */
-function mailHref(s) { return ES_MOVIL ? mailtoUrl(s) : gmailUrl(s); }
-function mailHrefGrupo(lista) {
-  if (ES_MOVIL) return 'mailto:?bcc=' + lista.map(s => s.email).join(',') + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBodyGrupo());
-  return gmailUrlGrupo(lista);
+function mailtoUrlGrupo(lista) {
+  return 'mailto:?bcc=' + lista.map(s => s.email).join(',') + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBodyGrupo());
 }
-const TXT_MAIL = ES_MOVIL ? 'Abrir mail redactado' : 'Abrir mail redactado en Gmail';
+/* App de Gmail (iOS/Android) vía su URL scheme. En iOS, mailto: cae en Apple
+   Mail salvo que el usuario haya cambiado su app default — por eso el botón
+   principal en móvil apunta a la app de Gmail y, si no está instalada, un
+   timer dispara el fallback a mailto: (si la página no pasó a segundo plano,
+   ninguna app se abrió). */
+function gmailAppUrl(s) {
+  return 'googlegmail://co?to=' + s.email + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBody(s));
+}
+function gmailAppUrlGrupo(lista) {
+  return 'googlegmail://co?bcc=' + lista.map(s => s.email).join(',') + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBodyGrupo());
+}
+function mailHref(s) { return ES_MOVIL ? gmailAppUrl(s) : gmailUrl(s); }
+function mailHrefGrupo(lista) { return ES_MOVIL ? gmailAppUrlGrupo(lista) : gmailUrlGrupo(lista); }
+function mailFallback(s) { return ES_MOVIL ? mailtoUrl(s) : null; }
+function mailFallbackGrupo(lista) { return ES_MOVIL ? mailtoUrlGrupo(lista) : null; }
+const TXT_MAIL = ES_MOVIL ? 'Abrir en Gmail' : 'Abrir mail redactado en Gmail';
+
+function armarFallback(url) {
+  const t = setTimeout(() => { if (!document.hidden) location.href = url; }, 1400);
+  const cancelar = () => { if (document.hidden) clearTimeout(t); };
+  document.addEventListener('visibilitychange', cancelar, { once: true });
+  window.addEventListener('pagehide', () => clearTimeout(t), { once: true });
+}
 
 function mailBodyGrupo() {
   return `Estimados senadores y senadoras:\n\nMe llamo [TU NOMBRE], soy ciudadano/a de [TU CIUDAD, PROVINCIA]. Les escribo por el proyecto de Inviolabilidad de la Propiedad Privada y su capítulo sobre la Ley de Tierras Rurales 26.737.\n\nEl promedio nacional de extranjerización (5%) esconde el dato relevante: según el Registro Nacional de Tierras Rurales, 36 departamentos ya superan el 15% y 4 superan el 50%. El tope departamental que se elimina era el único freno donde la compra extranjera se concentra: cordillera, lagos, nacientes de agua y frontera. Me preocupa además el silencio administrativo de 180 días en zonas de frontera.\n\nLes pido que consideren estos datos al definir su posición sobre ese capítulo.\n\nGracias por su tiempo.\n\n[TU NOMBRE]\n[TU CIUDAD, PROVINCIA]`;
@@ -300,7 +329,7 @@ function gmailUrlGrupo(lista) {
   if (!EN_WEBVIEW) return;
   const a = el('div', { class: 'aviso-webview', role: 'note' });
   a.append(el('strong', { text: 'Estás en el navegador de la app. ' }));
-  a.append('Los botones de mail funcionan igual (abren tu app de correo). Para la experiencia completa, tocá ⋯ arriba a la derecha y elegí "Abrir en el navegador externo".');
+  a.append('Los botones de mail funcionan igual: abren la app de Gmail (o tu app de correo). Para la experiencia completa, tocá ⋯ arriba a la derecha y elegí "Abrir en el navegador externo".');
   document.body.insertBefore(a, document.getElementById('banner'));
 })();
 
@@ -498,7 +527,11 @@ function vistaPerfil(slug) {
     setTimeout(() => { ev.target.textContent = 'Copiar'; }, 2000);
   } }));
   der.append(filaMail);
-  der.append(btnGmail({ href: mailHref(s) }, TXT_MAIL));
+  der.append(btnGmail({ href: mailHref(s), fallback: mailFallback(s) }, TXT_MAIL));
+  if (ES_MOVIL) {
+    der.append(el('p', { class: 'tel-nota', style: 'margin-top:6px' },
+      el('a', { href: mailtoUrl(s), text: '¿Usás otra app de correo? Abrí el borrador acá.' })));
+  }
   if (s.tel) der.append(el('p', { class: 'tel-nota', text: 'Teléfono: conmutador del Senado, interno ' + s.tel + '.' }));
   const redes = el('div', { class: 'redes' });
   if (s.tw) redes.append(el('a', { href: s.tw, target: '_blank', rel: 'noopener', text: 'X / Twitter' }));
@@ -589,7 +622,8 @@ function vistaCampania() {
     const fila = el('div', { class: 'redes', style: 'margin-top:10px' });
     fila.append(btnGmail({
       href: mailHrefGrupo(lista),
-      onclick: () => { lista.forEach(s => marcarEnviado(s.slug, true)); setTimeout(render, 150); },
+      fallback: mailFallbackGrupo(lista),
+      onclick: () => { lista.forEach(s => marcarEnviado(s.slug, true)); setTimeout(render, 400); },
     }, `Un mail a los ${lista.length}`));
     fila.append(el('button', { class: 'btn', text: `Copiar los ${lista.length} mails`, onclick: async ev => {
       const mails = lista.map(s => s.email).join(', ');
@@ -645,8 +679,9 @@ function vistaCampania() {
       const acc = el('div', { class: 'acciones' });
       acc.append(btnGmail({
         href: mailHref(s),
-        onclick: () => { marcarEnviado(s.slug, true); setTimeout(render, 150); },
-      }, (hecho ? 'Reabrir' : 'Abrir') + (ES_MOVIL ? ' mail' : ' Gmail')));
+        fallback: mailFallback(s),
+        onclick: () => { marcarEnviado(s.slug, true); setTimeout(render, 400); },
+      }, (hecho ? 'Reabrir' : 'Abrir') + ' Gmail'));
       acc.append(el('button', {
         class: 'camp-check', 'aria-pressed': String(hecho),
         text: hecho ? '✓ Enviado' : 'Marcar enviado',
