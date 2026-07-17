@@ -364,6 +364,20 @@ function armarFallback(url) {
   window.addEventListener('pagehide', () => clearTimeout(t), { once: true });
 }
 
+/* Links externos que en móvil saltan a la app nativa (Instagram, X, WhatsApp)
+   en vez de quedarse en el webview; si la app no está, el timer cae a la web. */
+function linkExterno(webUrl, appUrl, attrs) {
+  const base = Object.assign({ rel: 'noopener' }, attrs);
+  if (ES_MOVIL && appUrl) {
+    return el('a', Object.assign(base, { href: appUrl, onclick: () => armarFallback(webUrl) }));
+  }
+  return el('a', Object.assign(base, { href: webUrl, target: '_blank' }));
+}
+function appIg(url) { const m = String(url || '').match(/instagram\.com\/@?([A-Za-z0-9_.]+)/); return m ? 'instagram://user?username=' + m[1] : null; }
+function appXPerfil(url) { const h = handleX(url); return h ? 'twitter://user?screen_name=' + h : null; }
+function appXPost(texto) { return 'twitter://post?message=' + encodeURIComponent(texto); }
+function appWa(texto) { return 'whatsapp://send?text=' + encodeURIComponent(texto); }
+
 function mailBodyGrupo() {
   return conRemitente(`Estimados senadores y senadoras:\n\nMe llamo [TU NOMBRE], soy ciudadano/a de [TU CIUDAD, PROVINCIA]. Les escribo por el proyecto de Inviolabilidad de la Propiedad Privada y su capítulo sobre la Ley de Tierras Rurales 26.737, que vuelve al recinto el 6 de agosto.\n\nEl promedio nacional de extranjerización (5%) esconde el dato relevante: según el Registro Nacional de Tierras Rurales, 36 departamentos ya superan el 15% y 4 superan el 50%. El tope departamental que se elimina era el único freno donde la compra extranjera se concentra: cordillera, lagos, nacientes de agua y frontera. Me preocupa además el silencio administrativo de 180 días en zonas de frontera.\n\nLes pido que consideren estos datos al definir su posición sobre ese capítulo antes de la sesión del 6 de agosto.\n\nGracias por su tiempo.\n\n[TU NOMBRE]\n[TU CIUDAD, PROVINCIA]`);
 }
@@ -470,7 +484,8 @@ function vistaHome() {
   const TXT_SHARE_HOME = 'La Ley de Tierras no se votó el 16/7 por falta de votos: vuelve al Senado el 6 de agosto. Encontrá a tus senadores y escribiles — el mail sale pre-armado, tardás un minuto:';
   const btnShareHero = navigator.share
     ? el('button', { class: 'btn', text: 'Compartir el sitio', onclick: () => navigator.share({ text: TXT_SHARE_HOME, url: location.href }).catch(() => {}) })
-    : el('a', { class: 'btn', target: '_blank', rel: 'noopener', href: 'https://wa.me/?text=' + encodeURIComponent(TXT_SHARE_HOME + '\nhttps://0xdwb.is-a.dev/senadores/'), text: 'Compartir el sitio' });
+    : linkExterno('https://wa.me/?text=' + encodeURIComponent(TXT_SHARE_HOME + '\nhttps://0xdwb.is-a.dev/senadores/'),
+        appWa(TXT_SHARE_HOME + '\nhttps://0xdwb.is-a.dev/senadores/'), { class: 'btn', text: 'Compartir el sitio' });
   hero.append(el('p', { style: 'margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap' },
     el('a', { class: 'btn primario', href: '#/campania', text: 'Escribiles a varios senadores de una vez' }),
     btnShareHero));
@@ -619,20 +634,17 @@ function vistaPerfil(slug) {
   } }));
   der.append(filaMail);
   der.append(btnGmail({ href: mailHref(s), fallback: mailFallback(s) }, TXT_MAIL));
-  const urlTweet = tweetAlSenador(s);
-  if (urlTweet) {
-    der.append(el('p', { style: 'margin-top:8px' },
-      el('a', { class: 'btn', href: urlTweet, target: '_blank', rel: 'noopener', text: 'Preguntale su voto en X' })));
-  }
+  const btnTw = btnTweetAlSenador(s, { class: 'btn', text: 'Preguntale su voto en X' });
+  if (btnTw) der.append(el('p', { style: 'margin-top:8px' }, btnTw));
   if (ES_MOVIL) {
     der.append(el('p', { class: 'tel-nota', style: 'margin-top:6px' },
       el('a', { href: mailtoUrl(s), text: '¿Usás otra app de correo? Abrí el borrador acá.' })));
   }
   if (s.tel) der.append(el('p', { class: 'tel-nota', text: 'Teléfono: conmutador del Senado, interno ' + s.tel + '.' }));
   const redes = el('div', { class: 'redes' });
-  if (s.tw) redes.append(el('a', { href: s.tw, target: '_blank', rel: 'noopener', text: 'X / Twitter' }));
-  if (s.ig) redes.append(el('a', { href: s.ig, target: '_blank', rel: 'noopener', text: 'Instagram' }));
-  if (s.fb) redes.append(el('a', { href: s.fb, target: '_blank', rel: 'noopener', text: 'Facebook' }));
+  if (s.tw) redes.append(linkExterno(s.tw, appXPerfil(s.tw), { text: 'X / Twitter' }));
+  if (s.ig) redes.append(linkExterno(s.ig, appIg(s.ig), { text: 'Instagram' }));
+  if (s.fb) redes.append(linkExterno(s.fb, null, { text: 'Facebook' }));
   if (redes.childNodes.length) { der.append(el('h3', { style: 'margin-top:16px', text: 'Redes' })); der.append(redes); }
   der.append(el('p', { class: 'tel-nota', text: 'El mail se abre con un borrador respetuoso y con fuentes — completá tu nombre y ciudad antes de enviar. Un mensaje cordial pesa más que cien agresivos.' }));
   der.append(el('p', { style: 'margin-top:10px;font-size:14px' },
@@ -852,7 +864,7 @@ function vistaDifusion() {
       catch { window.prompt('Copiá el texto:', TXT_WHATSAPP_KIT); }
       setTimeout(() => { ev.target.textContent = 'Copiar texto'; }, 2000);
     } }),
-    el('a', { class: 'btn', target: '_blank', rel: 'noopener', href: 'https://wa.me/?text=' + encodeURIComponent(TXT_WHATSAPP_KIT), text: 'Abrir en WhatsApp' }),
+    linkExterno('https://wa.me/?text=' + encodeURIComponent(TXT_WHATSAPP_KIT), appWa(TXT_WHATSAPP_KIT), { class: 'btn', text: 'Abrir en WhatsApp' }),
     btnAgendar()));
   w.append(p1);
 
@@ -869,8 +881,8 @@ function vistaDifusion() {
       card.append(img);
       const fila = el('div', { class: 'kit-acciones' });
       fila.append(el('a', { class: 'btn', href: 'og/' + s.slug + '.jpg', download: 'senado-tierras-' + s.slug + '.jpg', text: 'Descargar' }));
-      const urlTweet = tweetAlSenador(s);
-      if (urlTweet) fila.append(el('a', { class: 'btn', target: '_blank', rel: 'noopener', href: urlTweet, text: 'Mencionar en X' }));
+      const btnTw = btnTweetAlSenador(s, { class: 'btn', text: 'Mencionar en X' });
+      if (btnTw) fila.append(btnTw);
       fila.append(el('a', { class: 'btn', href: '#/senador/' + s.slug, text: 'Perfil' }));
       card.append(fila);
       grid.append(card);
@@ -928,10 +940,10 @@ function shareRow(texto, url) {
       navigator.share({ text: texto, url: link }).catch(() => {});
     } }));
   }
-  d.append(el('a', { class: 'btn', target: '_blank', rel: 'noopener',
-    href: 'https://wa.me/?text=' + encodeURIComponent(texto + '\n' + link), text: 'WhatsApp' }));
-  d.append(el('a', { class: 'btn', target: '_blank', rel: 'noopener',
-    href: 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(texto) + '&url=' + encodeURIComponent(link), text: 'X' }));
+  d.append(linkExterno('https://wa.me/?text=' + encodeURIComponent(texto + '\n' + link),
+    appWa(texto + '\n' + link), { class: 'btn', text: 'WhatsApp' }));
+  d.append(linkExterno('https://twitter.com/intent/tweet?text=' + encodeURIComponent(texto + ' #LeyDeTierras') + '&url=' + encodeURIComponent(link),
+    appXPost(texto + ' #LeyDeTierras ' + link), { class: 'btn', text: 'X' }));
   d.append(el('button', { class: 'btn', text: 'Copiar link', onclick: async ev => {
     try { await navigator.clipboard.writeText(link); ev.target.textContent = 'Copiado ✓'; }
     catch { window.prompt('Copiá el link:', link); }
@@ -953,11 +965,12 @@ function handleX(url) {
   const m = String(url || '').match(/(?:twitter\.com|x\.com)\/@?([A-Za-z0-9_]+)/);
   return m ? m[1] : null;
 }
-function tweetAlSenador(s) {
+function btnTweetAlSenador(s, attrs) {
   const h = handleX(s.tw);
   if (!h) return null;
   const texto = `@${h} La Ley de Tierras vuelve al Senado el 6 de agosto. Según el RNTR, 36 departamentos ya superan el 15% de tierra en manos extranjeras. ¿Cuál va a ser su voto? #LeyDeTierras`;
-  return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(texto) + '&url=' + encodeURIComponent(urlPerfil(s));
+  const web = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(texto) + '&url=' + encodeURIComponent(urlPerfil(s));
+  return linkExterno(web, appXPost(texto + ' ' + urlPerfil(s)), attrs);
 }
 
 const ICS_VOTACION = [
