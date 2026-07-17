@@ -168,6 +168,9 @@
   .quesevota ul { padding-left: 18px; font-size: 14.5px; }
   .quesevota li { margin-bottom: 7px; }
   .quesevota .aclara { font-size: 13px; color: var(--tinta-70); margin-top: 14px; max-width: 75ch; }
+  details.faq { border-bottom: 1px solid var(--borde); padding: 10px 0; max-width: 75ch; }
+  details.faq summary { cursor: pointer; font-weight: 600; font-size: 14.5px; }
+  details.faq p { font-size: 14px; color: var(--tinta-70); margin-top: 8px; }
 
   /* Modo campaña */
   .camp-grupos { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 6px; }
@@ -899,7 +902,7 @@ function vistaDifusion() {
 function seccionQueSeVota() {
   const sec = el('section', { class: 'quesevota', id: 'que-se-vota' });
   const w = el('div', { class: 'wrap' });
-  w.append(el('h2', { class: 'seccion display', text: '¿Qué se vota, exactamente?' }));
+  w.append(el('h2', { class: 'seccion display', text: '¿Qué se vota en el Senado el 6 de agosto?' }));
   w.append(el('p', { class: 'nota', style: 'color:var(--tinta-70);font-size:14.5px;max-width:72ch', text: 'El proyecto de "Inviolabilidad de la Propiedad Privada" reescribe el régimen de tierras rurales vigente desde 2011, además de reformar expropiaciones y desalojos. Sobre tierras:' }));
   const cols = el('div', { class: 'cols' });
   const c1 = el('div');
@@ -928,6 +931,24 @@ function seccionQueSeVota() {
     el('a', { href: 'https://www.infobae.com/politica/2026/07/09/que-cambia-con-el-proyecto-que-modifica-la-ley-de-tierras-rurales-provincias-extranjeros-expropiaciones-y-desalojos/', target: '_blank', rel: 'noopener', text: 'Infobae' }), ' · ',
     el('a', { href: 'https://www.cronista.com/economia-politica/propiedad-privada-que-elimina-y-que-mantiene-el-senado-la-ultima-version-del-proyecto-de-sturzenegger/', target: '_blank', rel: 'noopener', text: 'El Cronista' }), ' · ',
     el('a', { href: 'https://www.senado.gob.ar/micrositios/DatosAbiertos/', target: '_blank', rel: 'noopener', text: 'Datos abiertos del Senado' }), '.'));
+
+  w.append(el('h4', { style: 'margin-top:26px;font-size:15px', text: 'Preguntas frecuentes' }));
+  [
+    ['¿Qué se vota en el Senado el 6 de agosto?',
+     'El proyecto de ley de Inviolabilidad de la Propiedad Privada, que entre otras cosas deroga los topes de la Ley de Tierras Rurales 26.737 a la compra de tierra por extranjeros. El 16 de julio la sesión pasó a cuarto intermedio por falta de votos y se retoma el 6 de agosto de 2026.'],
+    ['¿Qué límites elimina a la venta de tierras a extranjeros?',
+     'El tope del 15% de tierra rural en manos extranjeras (nacional, provincial y departamental), el límite del 30% por nacionalidad y el máximo de 1.000 hectáreas por titular extranjero en la zona núcleo. La regulación pasa a cada provincia, y en zonas de frontera se crea un silencio administrativo positivo de 180 días.'],
+    ['¿Cómo le escribo a un senador?',
+     'Los mails de los senadores son datos públicos oficiales del Senado. En este sitio elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para enviar desde tu propio correo en un minuto.'],
+    ['¿Quiénes definen la votación de la ley de tierras?',
+     'Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de julio el oficialismo no reunió esos votos y por eso la votación se postergó.'],
+  ].forEach(([q, a]) => {
+    const det = el('details', { class: 'faq' });
+    det.append(el('summary', { text: q }));
+    det.append(el('p', { text: a }));
+    w.append(det);
+  });
+
   sec.append(w);
   return sec;
 }

@@ -84,10 +84,42 @@ def main() -> None:
     }, ensure_ascii=False)
     extra_head += f'<script type="application/ld+json">{json_ld}</script>\n'
 
+    # FAQ con el fraseo real de búsqueda — debe reflejar la sección FAQ visible
+    # del template (Google exige que el JSON-LD coincida con contenido en pantalla).
+    faq = [
+        ("¿Qué se vota en el Senado el 6 de agosto?",
+         "El proyecto de ley de Inviolabilidad de la Propiedad Privada, que entre otras cosas "
+         "deroga los topes de la Ley de Tierras Rurales 26.737 a la compra de tierra por "
+         "extranjeros. El 16 de julio la sesión pasó a cuarto intermedio por falta de votos "
+         "y se retoma el 6 de agosto de 2026."),
+        ("¿Qué límites elimina a la venta de tierras a extranjeros?",
+         "El tope del 15% de tierra rural en manos extranjeras (nacional, provincial y "
+         "departamental), el límite del 30% por nacionalidad y el máximo de 1.000 hectáreas "
+         "por titular extranjero en la zona núcleo. La regulación pasa a cada provincia, y en "
+         "zonas de frontera se crea un silencio administrativo positivo de 180 días."),
+        ("¿Cómo le escribo a un senador?",
+         "Los mails de los senadores son datos públicos oficiales del Senado. En este sitio "
+         "elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para "
+         "enviar desde tu propio correo en un minuto."),
+        ("¿Quiénes definen la votación de la ley de tierras?",
+         "Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de "
+         "julio el oficialismo no reunió esos votos y por eso la votación se postergó."),
+    ]
+    faq_ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}}
+            for q, a in faq
+        ],
+    }, ensure_ascii=False).replace("</", "<\\/")
+    extra_head += f'<script type="application/ld+json">{faq_ld}</script>\n'
+
     full = (
         '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-        "<title>El Senado y la Tierra — 72 senadores, una votación</title>\n"
+        "<title>Ley de Tierras: qué se vota en el Senado el 6 de agosto y cómo escribirle a tus senadores</title>\n"
         f'<meta name="description" content="{og_desc}">\n'
         f'<link rel="canonical" href="{canonical}">\n'
         f'<link rel="icon" href="{favicon}">\n'

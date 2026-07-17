@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>El Senado y la Tierra — 72 senadores, una votación</title>
+<title>Ley de Tierras: qué se vota en el Senado el 6 de agosto y cómo escribirle a tus senadores</title>
 <meta name="description" content="No se votó el 16/7 — vuelve al Senado el 6 de agosto. Encontrá a tus senadores, mirá la postura de su bloque y escribiles en un click: el mail sale pre-armado.">
 <link rel="canonical" href="https://0xdwb.is-a.dev/senadores/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2314212E'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23C99C33' stroke-width='2'/%3E%3Cg stroke='%23C99C33' stroke-width='1.6'%3E%3Cpath d='M16 2v6M16 24v6M2 16h6M24 16h6M6 6l4 4M22 22l4 4M26 6l-4 4M10 22l-4 4'/%3E%3C/g%3E%3C/svg%3E">
@@ -22,6 +22,7 @@
 <meta name="google-site-verification" content="XpqDq6yIC9Yj7YBjLWlSmk2_VIbtMpaRxrtsxdqxdYM">
 <script data-goatcounter="https://manucubo.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "El Senado y la Tierra", "url": "https://0xdwb.is-a.dev/senadores/", "inLanguage": "es-AR", "description": "No se votó el 16/7 — vuelve al Senado el 6 de agosto. Encontrá a tus senadores, mirá la postura de su bloque y escribiles en un click: el mail sale pre-armado."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "¿Qué se vota en el Senado el 6 de agosto?", "acceptedAnswer": {"@type": "Answer", "text": "El proyecto de ley de Inviolabilidad de la Propiedad Privada, que entre otras cosas deroga los topes de la Ley de Tierras Rurales 26.737 a la compra de tierra por extranjeros. El 16 de julio la sesión pasó a cuarto intermedio por falta de votos y se retoma el 6 de agosto de 2026."}}, {"@type": "Question", "name": "¿Qué límites elimina a la venta de tierras a extranjeros?", "acceptedAnswer": {"@type": "Answer", "text": "El tope del 15% de tierra rural en manos extranjeras (nacional, provincial y departamental), el límite del 30% por nacionalidad y el máximo de 1.000 hectáreas por titular extranjero en la zona núcleo. La regulación pasa a cada provincia, y en zonas de frontera se crea un silencio administrativo positivo de 180 días."}}, {"@type": "Question", "name": "¿Cómo le escribo a un senador?", "acceptedAnswer": {"@type": "Answer", "text": "Los mails de los senadores son datos públicos oficiales del Senado. En este sitio elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para enviar desde tu propio correo en un minuto."}}, {"@type": "Question", "name": "¿Quiénes definen la votación de la ley de tierras?", "acceptedAnswer": {"@type": "Answer", "text": "Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de julio el oficialismo no reunió esos votos y por eso la votación se postergó."}}]}</script>
 </head>
 <body>
 <style>
@@ -192,6 +193,9 @@
   .quesevota ul { padding-left: 18px; font-size: 14.5px; }
   .quesevota li { margin-bottom: 7px; }
   .quesevota .aclara { font-size: 13px; color: var(--tinta-70); margin-top: 14px; max-width: 75ch; }
+  details.faq { border-bottom: 1px solid var(--borde); padding: 10px 0; max-width: 75ch; }
+  details.faq summary { cursor: pointer; font-weight: 600; font-size: 14.5px; }
+  details.faq p { font-size: 14px; color: var(--tinta-70); margin-top: 8px; }
 
   /* Modo campaña */
   .camp-grupos { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 6px; }
@@ -923,7 +927,7 @@ function vistaDifusion() {
 function seccionQueSeVota() {
   const sec = el('section', { class: 'quesevota', id: 'que-se-vota' });
   const w = el('div', { class: 'wrap' });
-  w.append(el('h2', { class: 'seccion display', text: '¿Qué se vota, exactamente?' }));
+  w.append(el('h2', { class: 'seccion display', text: '¿Qué se vota en el Senado el 6 de agosto?' }));
   w.append(el('p', { class: 'nota', style: 'color:var(--tinta-70);font-size:14.5px;max-width:72ch', text: 'El proyecto de "Inviolabilidad de la Propiedad Privada" reescribe el régimen de tierras rurales vigente desde 2011, además de reformar expropiaciones y desalojos. Sobre tierras:' }));
   const cols = el('div', { class: 'cols' });
   const c1 = el('div');
@@ -952,6 +956,24 @@ function seccionQueSeVota() {
     el('a', { href: 'https://www.infobae.com/politica/2026/07/09/que-cambia-con-el-proyecto-que-modifica-la-ley-de-tierras-rurales-provincias-extranjeros-expropiaciones-y-desalojos/', target: '_blank', rel: 'noopener', text: 'Infobae' }), ' · ',
     el('a', { href: 'https://www.cronista.com/economia-politica/propiedad-privada-que-elimina-y-que-mantiene-el-senado-la-ultima-version-del-proyecto-de-sturzenegger/', target: '_blank', rel: 'noopener', text: 'El Cronista' }), ' · ',
     el('a', { href: 'https://www.senado.gob.ar/micrositios/DatosAbiertos/', target: '_blank', rel: 'noopener', text: 'Datos abiertos del Senado' }), '.'));
+
+  w.append(el('h4', { style: 'margin-top:26px;font-size:15px', text: 'Preguntas frecuentes' }));
+  [
+    ['¿Qué se vota en el Senado el 6 de agosto?',
+     'El proyecto de ley de Inviolabilidad de la Propiedad Privada, que entre otras cosas deroga los topes de la Ley de Tierras Rurales 26.737 a la compra de tierra por extranjeros. El 16 de julio la sesión pasó a cuarto intermedio por falta de votos y se retoma el 6 de agosto de 2026.'],
+    ['¿Qué límites elimina a la venta de tierras a extranjeros?',
+     'El tope del 15% de tierra rural en manos extranjeras (nacional, provincial y departamental), el límite del 30% por nacionalidad y el máximo de 1.000 hectáreas por titular extranjero en la zona núcleo. La regulación pasa a cada provincia, y en zonas de frontera se crea un silencio administrativo positivo de 180 días.'],
+    ['¿Cómo le escribo a un senador?',
+     'Los mails de los senadores son datos públicos oficiales del Senado. En este sitio elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para enviar desde tu propio correo en un minuto.'],
+    ['¿Quiénes definen la votación de la ley de tierras?',
+     'Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de julio el oficialismo no reunió esos votos y por eso la votación se postergó.'],
+  ].forEach(([q, a]) => {
+    const det = el('details', { class: 'faq' });
+    det.append(el('summary', { text: q }));
+    det.append(el('p', { text: a }));
+    w.append(det);
+  });
+
   sec.append(w);
   return sec;
 }
