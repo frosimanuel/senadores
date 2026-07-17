@@ -245,6 +245,7 @@ const PROVINCIAS = [...new Set(SEN.map(s => s.provincia))].sort((a, b) => a.loca
    la app de mail ya logueada); en desktop, Gmail web. */
 const UA_NAV = navigator.userAgent || '';
 const EN_WEBVIEW = /Instagram|FBAN|FBAV|FB_IAB|Line\/|TikTok|BytedanceWebview|Twitter/i.test(UA_NAV);
+const ES_ANDROID = /Android/i.test(UA_NAV);
 const ES_MOVIL = /Android|iPhone|iPad|iPod/i.test(UA_NAV) || EN_WEBVIEW;
 const app = document.getElementById('app');
 let filtro = { prov: '', postura: '', q: '' };
@@ -343,22 +344,34 @@ function mailtoUrl(s) {
 function mailtoUrlGrupo(lista) {
   return 'mailto:?bcc=' + lista.map(s => s.email).join(',') + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBodyGrupo());
 }
-/* App de Gmail (iOS/Android) vía su URL scheme. En iOS, mailto: cae en Apple
-   Mail salvo que el usuario haya cambiado su app default — por eso el botón
-   principal en móvil apunta a la app de Gmail y, si no está instalada, un
-   timer dispara el fallback a mailto: (si la página no pasó a segundo plano,
-   ninguna app se abrió). */
+/* Estrategia por plataforma:
+   - Android: mailto: directo en el gesto del click — el scheme googlegmail://
+     es SOLO de iOS (la app de Gmail en Android no lo registra, Chrome tira
+     ERR_UNKNOWN_URL_SCHEME) y Chrome Android bloquea navegación a protocolos
+     externos fuera del gesto, así que el fallback por timer tampoco corre.
+     En Android el handler de mailto: es casi siempre la propia app de Gmail.
+   - iOS: googlegmail:// (abre la app de Gmail) con fallback a mailto: por
+     timer — en iOS mailto: cae en Apple Mail salvo default cambiado.
+   - Desktop: Gmail web con el borrador armado. */
 function gmailAppUrl(s) {
   return 'googlegmail://co?to=' + s.email + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBody(s));
 }
 function gmailAppUrlGrupo(lista) {
   return 'googlegmail://co?bcc=' + lista.map(s => s.email).join(',') + '&subject=' + encodeURIComponent(ASUNTO) + '&body=' + encodeURIComponent(mailBodyGrupo());
 }
-function mailHref(s) { return ES_MOVIL ? gmailAppUrl(s) : gmailUrl(s); }
-function mailHrefGrupo(lista) { return ES_MOVIL ? gmailAppUrlGrupo(lista) : gmailUrlGrupo(lista); }
-function mailFallback(s) { return ES_MOVIL ? mailtoUrl(s) : null; }
-function mailFallbackGrupo(lista) { return ES_MOVIL ? mailtoUrlGrupo(lista) : null; }
-const TXT_MAIL = ES_MOVIL ? 'Abrir en Gmail' : 'Abrir mail redactado en Gmail';
+function mailHref(s) {
+  if (ES_ANDROID) return mailtoUrl(s);
+  if (ES_MOVIL) return gmailAppUrl(s);
+  return gmailUrl(s);
+}
+function mailHrefGrupo(lista) {
+  if (ES_ANDROID) return mailtoUrlGrupo(lista);
+  if (ES_MOVIL) return gmailAppUrlGrupo(lista);
+  return gmailUrlGrupo(lista);
+}
+function mailFallback(s) { return ES_MOVIL && !ES_ANDROID ? mailtoUrl(s) : null; }
+function mailFallbackGrupo(lista) { return ES_MOVIL && !ES_ANDROID ? mailtoUrlGrupo(lista) : null; }
+const TXT_MAIL = ES_ANDROID ? 'Abrir mail redactado' : (ES_MOVIL ? 'Abrir en Gmail' : 'Abrir mail redactado en Gmail');
 
 function armarFallback(url) {
   const t = setTimeout(() => { if (!document.hidden) location.href = url; }, 1400);
@@ -639,7 +652,7 @@ function vistaPerfil(slug) {
   der.append(btnGmail({ href: mailHref(s), fallback: mailFallback(s) }, TXT_MAIL));
   const btnTw = btnTweetAlSenador(s, { class: 'btn', text: 'Preguntale su voto en X' });
   if (btnTw) der.append(el('p', { style: 'margin-top:8px' }, btnTw));
-  if (ES_MOVIL) {
+  if (ES_MOVIL && !ES_ANDROID) {
     der.append(el('p', { class: 'tel-nota', style: 'margin-top:6px' },
       el('a', { href: mailtoUrl(s), text: '¿Usás otra app de correo? Abrí el borrador acá.' })));
   }
@@ -812,7 +825,7 @@ function vistaCampania() {
         href: mailHref(s),
         fallback: mailFallback(s),
         onclick: () => { marcarEnviado(s.slug, true); setTimeout(render, 400); },
-      }, (hecho ? 'Reabrir' : 'Abrir') + ' Gmail'));
+      }, (hecho ? 'Reabrir' : 'Abrir') + (ES_ANDROID ? ' mail' : ' Gmail')));
       acc.append(el('button', {
         class: 'camp-check', 'aria-pressed': String(hecho),
         text: hecho ? '✓ Enviado' : 'Marcar enviado',

@@ -69,6 +69,8 @@ def main() -> None:
     extra_head = ""
     if config.get("google_verification"):
         extra_head += f'<meta name="google-site-verification" content="{config["google_verification"]}">\n'
+    if config.get("bing_verification"):
+        extra_head += f'<meta name="msvalidate.01" content="{config["bing_verification"]}">\n'
     if config.get("goatcounter"):
         extra_head += (
             f'<script data-goatcounter="https://{config["goatcounter"]}.goatcounter.com/count" '
