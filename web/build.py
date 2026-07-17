@@ -62,6 +62,28 @@ def main() -> None:
         "%3Cpath d='M16 2v6M16 24v6M2 16h6M24 16h6M6 6l4 4M22 22l4 4M26 6l-4 4M10 22l-4 4'/%3E"
         "%3C/g%3E%3C/svg%3E"
     )
+    # Config opcional (no versionada como requisito): claves para SEO/analytics.
+    #   data/config.json → {"google_verification": "...", "goatcounter": "codigo-sitio"}
+    config_path = BASE / "data" / "config.json"
+    config = json.loads(config_path.read_text()) if config_path.exists() else {}
+    extra_head = ""
+    if config.get("google_verification"):
+        extra_head += f'<meta name="google-site-verification" content="{config["google_verification"]}">\n'
+    if config.get("goatcounter"):
+        extra_head += (
+            f'<script data-goatcounter="https://{config["goatcounter"]}.goatcounter.com/count" '
+            'async src="https://gc.zgo.at/count.js"></script>\n'
+        )
+    json_ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "El Senado y la Tierra",
+        "url": canonical,
+        "inLanguage": "es-AR",
+        "description": og_desc,
+    }, ensure_ascii=False)
+    extra_head += f'<script type="application/ld+json">{json_ld}</script>\n'
+
     full = (
         '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
@@ -78,8 +100,10 @@ def main() -> None:
         '<meta property="og:image:width" content="1200">\n'
         '<meta property="og:image:height" content="630">\n'
         '<meta property="og:locale" content="es_AR">\n'
+        '<meta property="og:site_name" content="El Senado y la Tierra">\n'
         '<meta name="twitter:card" content="summary_large_image">\n'
         f'<meta name="twitter:image" content="{canonical}og-image.png">\n'
+        + extra_head +
         "</head>\n<body>\n" + contenido_body + "\n</body>\n</html>\n"
     )
     OUT_FULL.write_text(full)
@@ -116,6 +140,20 @@ def prerender_perfiles(senadores: list) -> None:
             "el 6 de agosto. Escribile en un click: el mail sale pre-armado."
         )
         hash_url = f"{CANONICAL}#/senador/{slug}"
+        persona = {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": f"{s['nombre']} {s['apellido']}",
+            "jobTitle": cargo,
+            "worksFor": {"@type": "Organization", "name": "Honorable Senado de la Nación Argentina"},
+            "workLocation": {"@type": "Place", "name": s["provincia"] + ", Argentina"},
+            "image": f"{CANONICAL}fotos/{slug}.jpg",
+            "url": hash_url,
+        }
+        redes = [s.get(r) for r in ("tw", "ig", "fb") if s.get(r)]
+        if redes:
+            persona["sameAs"] = redes
+        persona_ld = json.dumps(persona, ensure_ascii=False).replace("</", "<\\/")
         pagina = f"""<!doctype html>
 <html lang="es">
 <head>
@@ -133,6 +171,7 @@ def prerender_perfiles(senadores: list) -> None:
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{CANONICAL}og/{slug}.jpg">
 <link rel="canonical" href="{hash_url}">
+<script type="application/ld+json">{persona_ld}</script>
 <meta http-equiv="refresh" content="0; url=../#/senador/{slug}">
 <script>location.replace("../#/senador/{slug}");</script>
 </head>
