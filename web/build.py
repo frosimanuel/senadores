@@ -48,9 +48,9 @@ def main() -> None:
     OUT_ARTIFACT.write_text(contenido)
 
     og_desc = (
-        "No se votó el 16/7 — vuelve al Senado el 6 de agosto. Encontrá a tus "
-        "senadores, mirá la postura de su bloque y escribiles en un click: el "
-        "mail sale pre-armado."
+        "La posición de cada uno de los 72 senadores sobre la Ley de Tierras, "
+        "que vuelve al Senado el 6 de agosto. Encontrá a los tuyos y escribiles "
+        "en un click: el mail sale pre-armado."
     )
     canonical = "https://0xdwb.is-a.dev/senadores/"
     favicon = (
@@ -104,6 +104,11 @@ def main() -> None:
         ("¿Quiénes definen la votación de la ley de tierras?",
          "Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de "
          "julio el oficialismo no reunió esos votos y por eso la votación se postergó."),
+        ("¿Cuál es la posición de cada senador sobre la ley de tierras?",
+         "El tablero de este sitio muestra la posición de cada uno de los 72 senadores según "
+         "su bloque: 21 impulsan el proyecto, 13 firmaron el dictamen de mayoría, 14 tienen "
+         "el voto en juego y 24 lo rechazan. Cada perfil detalla la postura, la provincia y "
+         "el contacto oficial."),
     ]
     faq_ld = json.dumps({
         "@context": "https://schema.org",

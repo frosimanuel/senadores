@@ -515,7 +515,7 @@ function vistaHome() {
   const tab = el('section', { class: 'tablero' });
   const tw = el('div', { class: 'wrap' });
   tw.append(el('h2', { class: 'seccion display', text: 'Así está el tablero' }));
-  tw.append(el('p', { class: 'nota', text: 'Postura de cada BLOQUE frente al proyecto, según dictámenes de comisión y posiciones públicas. No es una predicción del voto individual de cada senador. Tocá una postura para filtrar.' }));
+  tw.append(el('p', { class: 'nota', text: 'La posición de cada uno de los 72 senadores sobre la Ley de Tierras, según su bloque — dictámenes de comisión y posiciones públicas. No es una predicción del voto individual. Tocá una postura para filtrar.' }));
   const grid = el('div', { class: 'stances' });
   for (const [key, meta] of Object.entries(ST)) {
     const n = SEN.filter(s => s.postura === key).length;
@@ -942,6 +942,8 @@ function seccionQueSeVota() {
      'Los mails de los senadores son datos públicos oficiales del Senado. En este sitio elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para enviar desde tu propio correo en un minuto.'],
     ['¿Quiénes definen la votación de la ley de tierras?',
      'Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de julio el oficialismo no reunió esos votos y por eso la votación se postergó.'],
+    ['¿Cuál es la posición de cada senador sobre la ley de tierras?',
+     'El tablero de este sitio muestra la posición de cada uno de los 72 senadores según su bloque: 21 impulsan el proyecto, 13 firmaron el dictamen de mayoría, 14 tienen el voto en juego y 24 lo rechazan. Cada perfil detalla la postura, la provincia y el contacto oficial.'],
   ].forEach(([q, a]) => {
     const det = el('details', { class: 'faq' });
     det.append(el('summary', { text: q }));
