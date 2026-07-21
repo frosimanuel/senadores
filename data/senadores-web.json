@@ -17,12 +17,26 @@
   "fb": "https://www.facebook.com/maxiabad?mibextid=9R9pXO",
   "tw": "https://x.com/maxiabad?s=11",
   "ig": "https://www.instagram.com/maxi.abad?igsh=MXc2YzF3YWduc3hneA==",
-  "postura": "dictamen",
-  "posturaLabel": "Firmó dictamen de mayoría",
-  "posturaDesc": "Aliado del oficialismo en comisión. El 16/07 dio quórum, pero hubo ausencias radicales y el texto se sigue renegociando (circuló una \"versión 15\").",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Referente de la UCR: firmó el dictamen de mayoría del proyecto, pero se pronunció en contra del capítulo que libera la venta de tierras a extranjeros.",
   "extPct": null,
   "extNota": null,
-  "iniciales": "AM"
+  "iniciales": "AM",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los radicales que se oponen al capítulo de tierras — una de las grietas que dejó al oficialismo sin los votos y forzó la postergación al 6 de agosto.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "564",
@@ -392,12 +406,26 @@
   "fb": "",
   "tw": "",
   "ig": "",
-  "postura": "juego",
-  "posturaLabel": "Voto en juego",
-  "posturaDesc": "Bloque provincial sin posición pública unificada: acá se define la votación. El 16/07 el oficialismo no juntó estos votos y postergó todo al 6 de agosto.",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Senador/a de un bloque provincial que se pronunció en contra del capítulo que libera la venta de tierras a extranjeros. Antes figuraba con el voto en juego.",
   "extPct": null,
   "extNota": null,
-  "iniciales": "CJ"
+  "iniciales": "CJ",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los senadores provinciales que se oponen al capítulo de tierras. Su voto era de los que el oficialismo necesitaba y no consiguió.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "586",
@@ -617,12 +645,26 @@
   "fb": "https://www.facebook.com/flaviofamaoficial",
   "tw": "https://twitter.com/flaviofama",
   "ig": "https://instagram.com/flaviofamaoficial",
-  "postura": "dictamen",
-  "posturaLabel": "Firmó dictamen de mayoría",
-  "posturaDesc": "Aliado del oficialismo en comisión. El 16/07 dio quórum, pero hubo ausencias radicales y el texto se sigue renegociando (circuló una \"versión 15\").",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Referente de la UCR: firmó el dictamen de mayoría del proyecto, pero se pronunció en contra del capítulo que libera la venta de tierras a extranjeros.",
   "extPct": "8,64%",
   "extNota": null,
-  "iniciales": "FF"
+  "iniciales": "FF",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los radicales que se oponen al capítulo de tierras — una de las grietas que dejó al oficialismo sin los votos y forzó la postergación al 6 de agosto.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "468",
@@ -692,12 +734,26 @@
   "fb": "",
   "tw": "",
   "ig": "",
-  "postura": "juego",
-  "posturaLabel": "Voto en juego",
-  "posturaDesc": "Bloque provincial sin posición pública unificada: acá se define la votación. El 16/07 el oficialismo no juntó estos votos y postergó todo al 6 de agosto.",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Senador/a de un bloque provincial que se pronunció en contra del capítulo que libera la venta de tierras a extranjeros. Antes figuraba con el voto en juego.",
   "extPct": null,
   "extNota": null,
-  "iniciales": "GN"
+  "iniciales": "GN",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los senadores provinciales que se oponen al capítulo de tierras. Su voto era de los que el oficialismo necesitaba y no consiguió.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "573",
@@ -967,12 +1023,26 @@
   "fb": "https://www.facebook.com/kronebergerdaniel",
   "tw": "https://twitter.com/Dkroneberger",
   "ig": "https://www.instagram.com/kroneberger_daniel/?hl=en",
-  "postura": "dictamen",
-  "posturaLabel": "Firmó dictamen de mayoría",
-  "posturaDesc": "Aliado del oficialismo en comisión. El 16/07 dio quórum, pero hubo ausencias radicales y el texto se sigue renegociando (circuló una \"versión 15\").",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Referente de la UCR: firmó el dictamen de mayoría del proyecto, pero se pronunció en contra del capítulo que libera la venta de tierras a extranjeros.",
   "extPct": null,
   "extNota": null,
-  "iniciales": "KD"
+  "iniciales": "KD",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los radicales que se oponen al capítulo de tierras — una de las grietas que dejó al oficialismo sin los votos y forzó la postergación al 6 de agosto.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "538",
@@ -1667,12 +1737,26 @@
   "fb": "",
   "tw": "",
   "ig": "",
-  "postura": "juego",
-  "posturaLabel": "Voto en juego",
-  "posturaDesc": "Bloque provincial sin posición pública unificada: acá se define la votación. El 16/07 el oficialismo no juntó estos votos y postergó todo al 6 de agosto.",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Senador/a de un bloque provincial que se pronunció en contra del capítulo que libera la venta de tierras a extranjeros. Antes figuraba con el voto en juego.",
   "extPct": null,
   "extNota": null,
-  "iniciales": "TE"
+  "iniciales": "TE",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los senadores provinciales que se oponen al capítulo de tierras. Su voto era de los que el oficialismo necesitaba y no consiguió.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "561",
@@ -1742,12 +1826,26 @@
   "fb": "https://www.facebook.com/VigoAlejandra",
   "tw": "https://twitter.com/alevigo",
   "ig": "https://www.instagram.com/vigo_alejandra",
-  "postura": "juego",
-  "posturaLabel": "Voto en juego",
-  "posturaDesc": "Bloque provincial sin posición pública unificada: acá se define la votación. El 16/07 el oficialismo no juntó estos votos y postergó todo al 6 de agosto.",
+  "postura": "rechaza",
+  "posturaLabel": "Se opone al capítulo de tierras",
+  "posturaDesc": "Senador/a de un bloque provincial que se pronunció en contra del capítulo que libera la venta de tierras a extranjeros. Antes figuraba con el voto en juego.",
   "extPct": null,
   "extNota": null,
-  "iniciales": "VA"
+  "iniciales": "VA",
+  "novedad": {
+   "fecha": "16/07/2026",
+   "texto": "En la sesión del 16 de julio, la prensa lo ubicó entre los senadores provinciales que se oponen al capítulo de tierras. Su voto era de los que el oficialismo necesitaba y no consiguió.",
+   "fuentes": [
+    {
+     "medio": "El Eco",
+     "url": "https://www.eleco.com.ar/nacionales/el-oficialismo-no-reunio-los-votos-y-aplazo-el-tratamiento-de-la-reforma-de-la-ley-de-tierras"
+    },
+    {
+     "medio": "La Nación",
+     "url": "https://www.lanacion.com.ar/politica/senado-con-los-numeros-justos-y-mucha-incertidumbre-comenzo-la-sesion-para-discutir-la-nid16072026/"
+    }
+   ]
+  }
  },
  {
   "id": "524",

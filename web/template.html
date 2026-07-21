@@ -146,6 +146,11 @@
   .panel p { font-size: 14.5px; }
   .panel p + p { margin-top: 8px; }
   .disclaimer { font-size: 13px; color: var(--tinta-70); border-left: 3px solid var(--dorado); padding-left: 10px; margin-top: 12px; }
+  .novedad { margin-top: 14px; background: #F3E9E8; border: 1px solid var(--st-rechaza); border-radius: 4px; padding: 12px 14px; }
+  .novedad-tit { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--st-rechaza); display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+  .novedad-punto { width: 8px; height: 8px; border-radius: 50%; background: var(--st-rechaza); flex: none; }
+  .novedad p { font-size: 14px; }
+  .novedad-fuente { margin-top: 8px; font-size: 12.5px; color: var(--tinta-70); }
   .dato-prov { margin-top: 14px; font-size: 14px; background: var(--celeste-suave); border-radius: 4px; padding: 10px 12px; }
   .contacto .fila-c { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
   .contacto .email { font-variant-numeric: tabular-nums; font-size: 14.5px; word-break: break-all; }
@@ -233,10 +238,10 @@ const SEN = JSON.parse(document.getElementById('data-senadores').textContent);
 const ESTADO = JSON.parse(document.getElementById('data-estado').textContent);
 
 const ST = {
-  impulsa:  { ic: '"▲"', color: 'var(--st-impulsa)',  corto: 'Impulsa' },
-  dictamen: { ic: '"◆"', color: 'var(--st-dictamen)', corto: 'Dictamen de mayoría' },
-  juego:    { ic: '"●"', color: 'var(--st-juego)',    corto: 'Voto en juego' },
-  rechaza:  { ic: '"▼"', color: 'var(--st-rechaza)',  corto: 'Rechaza' },
+  impulsa:  { ic: '"▲"', color: 'var(--st-impulsa)',  corto: 'Impulsa',          desc: 'Bloque oficialista, autor del dictamen de mayoría que impulsa el proyecto.' },
+  dictamen: { ic: '"◆"', color: 'var(--st-dictamen)', corto: 'Dictamen de mayoría', desc: 'Aliados que firmaron el dictamen de mayoría; su voto sobre el capítulo de tierras se sigue renegociando.' },
+  juego:    { ic: '"●"', color: 'var(--st-juego)',    corto: 'Voto en juego',    desc: 'Bloques provinciales sin posición pública definida: acá se define la votación.' },
+  rechaza:  { ic: '"▼"', color: 'var(--st-rechaza)',  corto: 'Rechaza o frena',  desc: 'Rechazan el proyecto o se pronunciaron contra el capítulo que libera la venta de tierras.' },
 };
 const PROVINCIAS = [...new Set(SEN.map(s => s.provincia))].sort((a, b) => a.localeCompare(b, 'es'));
 
@@ -539,7 +544,7 @@ function vistaHome() {
     });
     b.append(el('div', { class: 'n', text: String(n) }));
     b.append(el('div', { class: 't', text: meta.corto }));
-    b.append(el('div', { class: 'd', text: SEN.find(s => s.postura === key).posturaDesc }));
+    b.append(el('div', { class: 'd', text: meta.desc }));
     grid.append(b);
   }
   tw.append(grid); tab.append(tw); app.append(tab);
@@ -625,10 +630,23 @@ function vistaPerfil(slug) {
   const cols = el('div', { class: 'bloques2' });
 
   const izq = el('div', { class: 'panel', style: stanceVars(s) });
-  izq.append(el('h3', { text: 'Postura del bloque frente a la Ley de Tierras' }));
+  izq.append(el('h3', { text: s.novedad ? 'Postura frente a la Ley de Tierras' : 'Postura del bloque frente a la Ley de Tierras' }));
   izq.append(el('div', { class: 'postura-linea', text: s.posturaLabel }));
   izq.append(el('p', { text: s.posturaDesc }));
-  if (s.postura === 'juego' || s.postura === 'dictamen') {
+  if (s.novedad) {
+    const nov = el('div', { class: 'novedad' });
+    nov.append(el('div', { class: 'novedad-tit' }, el('span', { class: 'novedad-punto', 'aria-hidden': 'true' }), 'Última definición · ' + s.novedad.fecha));
+    nov.append(el('p', { text: s.novedad.texto }));
+    if (s.novedad.fuentes && s.novedad.fuentes.length) {
+      const f = el('p', { class: 'novedad-fuente' }, 'Fuentes: ');
+      s.novedad.fuentes.forEach((fue, i) => {
+        if (i) f.append(' · ');
+        f.append(el('a', { href: fue.url, target: '_blank', rel: 'noopener', text: fue.medio }));
+      });
+      nov.append(f);
+    }
+    izq.append(nov);
+  } else if (s.postura === 'juego' || s.postura === 'dictamen') {
     izq.append(el('p', { class: 'disclaimer', text: 'Esta es la postura pública del bloque, no una predicción del voto de ' + s.apellido + '. Su voto individual se conoce recién en la votación nominal.' }));
   }
   if (s.extPct || s.extNota) {
@@ -884,11 +902,12 @@ function vistaDifusion() {
     btnAgendar()));
   w.append(p1);
 
+  const enJuego = SEN.filter(s => s.postura === 'juego');
   const p2 = el('div', { class: 'panel', style: 'margin-top:16px' });
-  p2.append(el('h3', { text: 'Placas de los 14 votos en juego' }));
+  p2.append(el('h3', { text: 'Placas de los ' + enJuego.length + ' votos en juego' }));
   p2.append(el('p', { style: 'font-size:14px', text: 'Una placa por senador indeciso, con su foto y postura. Descargala, posteala y etiquetalo: la pregunta pública "¿cuál va a ser su voto?" es legítima y pesa.' }));
   const grid = el('div', { class: 'kit-grid' });
-  SEN.filter(s => s.postura === 'juego')
+  enJuego
     .sort((a, b) => a.provincia.localeCompare(b.provincia, 'es') || a.apellido.localeCompare(b.apellido, 'es'))
     .forEach(s => {
       const card = el('div', { class: 'kit-card' });
@@ -954,9 +973,9 @@ function seccionQueSeVota() {
     ['¿Cómo le escribo a un senador?',
      'Los mails de los senadores son datos públicos oficiales del Senado. En este sitio elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para enviar desde tu propio correo en un minuto.'],
     ['¿Quiénes definen la votación de la ley de tierras?',
-     'Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de julio el oficialismo no reunió esos votos y por eso la votación se postergó.'],
+     'Los bloques provinciales con el voto en juego. Tras la sesión del 16 de julio, la prensa ubicó a varios senadores —radicales como Abad, Kroneberger y Famá, y provinciales como Vigo, Carambia, Gadano y Terenzi— entre quienes se oponen al capítulo de tierras, lo que dejó al oficialismo sin los votos.'],
     ['¿Cuál es la posición de cada senador sobre la ley de tierras?',
-     'El tablero de este sitio muestra la posición de cada uno de los 72 senadores según su bloque: 21 impulsan el proyecto, 13 firmaron el dictamen de mayoría, 14 tienen el voto en juego y 24 lo rechazan. Cada perfil detalla la postura, la provincia y el contacto oficial.'],
+     'El tablero de este sitio muestra la posición de cada uno de los 72 senadores: 21 impulsan el proyecto, 10 firmaron el dictamen de mayoría, 10 tienen el voto en juego y 31 lo rechazan o se oponen al capítulo de tierras. Cada perfil detalla la postura, la provincia, la fuente y el contacto oficial.'],
   ].forEach(([q, a]) => {
     const det = el('details', { class: 'faq' });
     det.append(el('summary', { text: q }));

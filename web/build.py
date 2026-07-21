@@ -104,13 +104,15 @@ def main() -> None:
          "elegís tu provincia y se abre un borrador respetuoso y con fuentes, listo para "
          "enviar desde tu propio correo en un minuto."),
         ("¿Quiénes definen la votación de la ley de tierras?",
-         "Los bloques provinciales: 14 senadores sin posición pública unificada. El 16 de "
-         "julio el oficialismo no reunió esos votos y por eso la votación se postergó."),
+         "Los bloques provinciales con el voto en juego. Tras la sesión del 16 de julio, la "
+         "prensa ubicó a varios senadores —radicales como Abad, Kroneberger y Famá, y "
+         "provinciales como Vigo, Carambia, Gadano y Terenzi— entre quienes se oponen al "
+         "capítulo de tierras, lo que dejó al oficialismo sin los votos."),
         ("¿Cuál es la posición de cada senador sobre la ley de tierras?",
-         "El tablero de este sitio muestra la posición de cada uno de los 72 senadores según "
-         "su bloque: 21 impulsan el proyecto, 13 firmaron el dictamen de mayoría, 14 tienen "
-         "el voto en juego y 24 lo rechazan. Cada perfil detalla la postura, la provincia y "
-         "el contacto oficial."),
+         "El tablero de este sitio muestra la posición de cada uno de los 72 senadores: 21 "
+         "impulsan el proyecto, 10 firmaron el dictamen de mayoría, 10 tienen el voto en "
+         "juego y 31 lo rechazan o se oponen al capítulo de tierras. Cada perfil detalla la "
+         "postura, la provincia, la fuente y el contacto oficial."),
     ]
     faq_ld = json.dumps({
         "@context": "https://schema.org",
